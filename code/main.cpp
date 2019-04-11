@@ -39,6 +39,10 @@ GUI_MAIN {
 		in.lmb_pressed = is_key_pressed (global_window, KEY_LMB);
 		in.rmb_pressed = is_key_pressed (global_window, KEY_RMB);
 
+		in.num1_down = is_key_down (global_window, KEY_NUM1);
+		in.num3_down = is_key_down (global_window, KEY_NUM3);
+		in.num7_down = is_key_down (global_window, KEY_NUM7);
+
 		in.scroll_dir = global_window -> input -> mouse_scroll_direction;
 
 		app_update_and_render (app_memory, api, in, dt);

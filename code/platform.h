@@ -15,6 +15,10 @@ struct input {
 
 	bool lmb_pressed;
 	bool rmb_pressed;
+
+	bool num1_down;
+	bool num3_down;
+	bool num7_down;
 };
 
 struct platform_api {

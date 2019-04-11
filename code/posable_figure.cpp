@@ -10,10 +10,6 @@
 #include "gl_extensions.h"
 #include <gl/gl.h>
 
-#define SHADER_VERT_SOURCE		"W:/posable_figure/data/shaders/default.vert"
-#define SHADER_FRAG_SOURCE		"W:/posable_figure/data/shaders/default.frag"
-#define MODEL_SOURCE			"W:/posable_figure/data/models/obj_test.obj"
-
 static void handle_input (app* App, input in, float dt) {
 	if (in.rmb_pressed) {
 		int mouse_delta_x = in.last_mouse_x - in.mouse_x;
@@ -21,6 +17,24 @@ static void handle_input (app* App, input in, float dt) {
 
 		App -> camera.yaw += mouse_delta_x * ARC_BALL_SPEED * ARC_BALL_SENSITIVITY;
 		App -> camera.pitch += mouse_delta_y * ARC_BALL_SPEED * ARC_BALL_SENSITIVITY;
+
+		arc_ball_rotate (&App -> camera);
+	}
+	else if (in.num1_down) {
+		App -> camera.yaw = FRONT_VIEW_YAW;
+		App -> camera.pitch = FRONT_VIEW_PITCH;
+
+		arc_ball_rotate (&App -> camera);
+	}
+	else if (in.num3_down) {
+		App -> camera.yaw = RIGHT_VIEW_YAW;
+		App -> camera.pitch = RIGHT_VIEW_PITCH;
+
+		arc_ball_rotate (&App -> camera);
+	}
+	else if (in.num7_down) {
+		App -> camera.yaw = TOP_VIEW_YAW;
+		App -> camera.pitch = TOP_VIEW_PITCH;
 
 		arc_ball_rotate (&App -> camera);
 	}
