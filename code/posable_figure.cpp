@@ -19,11 +19,14 @@ static void handle_input (app* App, input in, float dt) {
 		int mouse_delta_x = in.last_mouse_x - in.mouse_x;
 		int mouse_delta_y = in.mouse_y - in.last_mouse_y;
 
-		App -> camera.yaw += mouse_delta_x * ARC_BALL_SPEED * MOUSE_MOVE_SENSITIVITY;
-		App -> camera.pitch += mouse_delta_y * ARC_BALL_SPEED * MOUSE_MOVE_SENSITIVITY;
+		App -> camera.yaw += mouse_delta_x * ARC_BALL_SPEED * ARC_BALL_SENSITIVITY;
+		App -> camera.pitch += mouse_delta_y * ARC_BALL_SPEED * ARC_BALL_SENSITIVITY;
 
 		arc_ball_rotate (&App -> camera);
 	}
+
+	if (in.scroll_dir != 0)
+		arc_ball_zoom (&App -> camera, -in.scroll_dir);
 }
 
 void app_init (void* memory, platform_api api) {

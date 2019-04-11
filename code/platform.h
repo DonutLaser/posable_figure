@@ -7,11 +7,12 @@ typedef READ_FILE_PROC (read_file_proc);
 typedef GET_WINDOW_SIZE_PROC (get_window_size_proc);
 
 struct input {
+	int scroll_dir;
 	int last_mouse_x;
 	int last_mouse_y;
 	int mouse_x;
 	int mouse_y;
-	
+
 	bool lmb_pressed;
 	bool rmb_pressed;
 };

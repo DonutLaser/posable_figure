@@ -3,6 +3,9 @@
 #include "glm/glm.hpp"
 
 #define DEF_RADIUS 10.0f
+#define MIN_RADIUS 5.0f
+#define MAX_RADIUS 15.0f
+#define ZOOM_SPEED 10.0f
 
 arc_ball arc_ball_new (glm::vec3 target) {
 	arc_ball result = { };
@@ -30,5 +33,12 @@ void arc_ball_rotate (arc_ball* ball) {
  	ball -> cam.up = glm::normalize (glm::cross (ball -> cam.right, ball -> cam.front));
 
  	ball -> cam.position = new_position;
+}
+
+void arc_ball_zoom (arc_ball* ball, int zoom_dir) {
+	ball -> radius += zoom_dir;
+	ball -> radius  = glm::clamp (ball -> radius, MIN_RADIUS, MAX_RADIUS);
+
+	arc_ball_rotate (ball);
 }
 

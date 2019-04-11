@@ -7,6 +7,5 @@
 #define BG_COLOR 0.0f, 0.0f, 0.0f, 1.0f
 #define DIFFUSE_COLOR 1.0f, 0.5f, 0.2f
 
-#define MOUSE_MOVE_SENSITIVITY	0.009f;
 
 #endif
