@@ -74,14 +74,24 @@ void app_init (void* memory, platform_api api) {
 	glEnable (GL_DEPTH_TEST);
 }
 
-void app_update_and_render (void* memory, platform_api platform, input in, float dt) {
+void app_update_and_render (void* memory, platform_api api, input in, float dt) {
 	app* App = (app*)memory;
+
+	if (api.was_window_resized ()) {
+		shader_use (App -> figure.mat.shader);
+		unsigned window_width, window_height;
+		api.get_window_size (&window_width, &window_height);
+		glm::mat4 projection = glm::mat4 (1.0f);
+		projection = glm::perspective (glm::radians (App -> camera.cam.zoom), (float)window_width / (float)window_height, 0.1f, 100.0f);
+		shader_set_mat4 (App -> figure.mat.shader, "projection", projection);	
+	}
 
 	handle_input (App, in, dt);
 
 	glClearColor (BG_COLOR);
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	shader_use (App -> figure.mat.shader);
 	glm::mat4 view = camera_get_view_matrix (&App -> camera.cam);
 	shader_set_mat4 (App -> figure.mat.shader, "view", view);
 

@@ -5,6 +5,8 @@
 typedef READ_FILE_PROC (read_file_proc);
 #define GET_WINDOW_SIZE_PROC(name) void name (unsigned* width, unsigned* height)
 typedef GET_WINDOW_SIZE_PROC (get_window_size_proc);
+#define WAS_WINDOW_RESIZED_PROC(name) bool name ()
+typedef WAS_WINDOW_RESIZED_PROC(was_window_resized_proc);
 
 struct input {
 	int scroll_dir;
@@ -24,6 +26,7 @@ struct input {
 struct platform_api {
 	read_file_proc* read_file;
 	get_window_size_proc* get_window_size;
+	was_window_resized_proc* was_window_resized;	
 };
 
 #endif 

@@ -4,6 +4,7 @@
 
 #include "platform.h"
 #include "posable_figure.h"
+#include "constants.h"
 
 static win32_window* global_window;
 
@@ -13,14 +14,22 @@ static void platform_get_window_size (unsigned* width, unsigned* height) {
 	*height = size.y;
 }
 
+static bool platform_was_window_resized () {
+	bool result = global_window -> resized;
+	global_window -> resized = false;
+
+	return result; 
+}
+
 GUI_MAIN {
-	global_window = window_new ("Posable Figure", 800, 600);
+	global_window = window_new ("Posable Figure", WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	void* app_memory = malloc (sizeof (char) * 1024 * 1024 * 5); // 5 MB
 
 	platform_api api = { };
 	api.read_file = read_file;
 	api.get_window_size = platform_get_window_size;
+	api.was_window_resized = platform_was_window_resized;
 
 	app_init (app_memory, api);
 

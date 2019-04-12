@@ -144,6 +144,7 @@ struct win32_window {
 
 	bool quit;
 	bool hide_and_lock_cursor;
+	bool resized;
 };
 
 win32_window* window_new (const char* title, unsigned width, unsigned height);

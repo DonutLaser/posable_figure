@@ -81,6 +81,7 @@ static LRESULT CALLBACK window_proc (HWND window, UINT msg, WPARAM w_param, LPAR
 		switch (msg) {
 			case WM_SIZE: {
 				glViewport (0, 0, LOWORD (l_param), HIWORD (l_param));
+				wnd -> resized = true;
 				return 0;
 			}
 			case WM_SETCURSOR: {
