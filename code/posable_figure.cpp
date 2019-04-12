@@ -55,16 +55,13 @@ void app_init (void* memory, platform_api api) {
 	free (frag_source);
 
 	material mat = material_new (default_shader);
-	mat.diffuse_color = glm::vec3 (DIFFUSE_COLOR);
 
 	OBJ model = obj_load (MODEL_SOURCE);
 
-	App -> figure = model_new (model.vertices.data, model.vertices.count, model.uv.data, model.uv.count, model.normals.data, model.normals.count, mat);
+	App -> figure = model_new (model, mat);
 	App -> camera = arc_ball_new (glm::vec3 (0.0f, 0.0f, 0.0f));
 
 	shader_use (App -> figure.mat.shader);
-	shader_set_vec3 (default_shader, "diffuse_color", mat.diffuse_color);
-
 	unsigned window_width, window_height;
 	api.get_window_size (&window_width, &window_height);
 	glm::mat4 projection = glm::mat4 (1.0f);
@@ -73,8 +70,6 @@ void app_init (void* memory, platform_api api) {
 
 	glm::mat4 view = camera_get_view_matrix (&App -> camera.cam);
 	shader_set_mat4 (App -> figure.mat.shader, "view", view);
-
-	obj_delete (model);
 
 	glEnable (GL_DEPTH_TEST);
 }
@@ -91,4 +86,10 @@ void app_update_and_render (void* memory, platform_api platform, input in, float
 	shader_set_mat4 (App -> figure.mat.shader, "view", view);
 
 	model_render (&App -> figure);
+}
+
+void app_close (void* memory) {
+	app* App = (app*)memory;
+
+	obj_delete (App -> figure.obj);
 }

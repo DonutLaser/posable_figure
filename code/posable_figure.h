@@ -14,5 +14,6 @@ struct app {
 
 void app_init (void* memory, platform_api platform);
 void app_update_and_render (void* memory, platform_api platform, input in, float dt);
+void app_close (void* memory);
 
 #endif

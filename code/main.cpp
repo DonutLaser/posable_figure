@@ -50,7 +50,10 @@ GUI_MAIN {
 		window_render (global_window);
 	}
 
+	app_close (app_memory);
+
 	window_free (global_window);
 	free (global_window);
+	free (app_memory);
 	return 0;
 };

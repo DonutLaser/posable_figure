@@ -14,7 +14,7 @@ struct model {
 	material mat;
 };
 
-model model_new (float* vertices, unsigned vert_count, float* uvs, unsigned uv_count, float* normals, unsigned normal_count, material mat);
+model model_new (OBJ obj, material mat);
 void model_render (model* m);
 
 #endif
