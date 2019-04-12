@@ -4,7 +4,7 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
-#define BG_COLOR 0.0f, 0.0f, 0.0f, 1.0f
+#define BG_COLOR 0.239f, 0.227f, 0.419f, 1.0f
 
 #define SHADER_VERT_SOURCE		"W:/posable_figure/data/shaders/default.vert"
 #define SHADER_FRAG_SOURCE		"W:/posable_figure/data/shaders/default.frag"
