@@ -52,6 +52,7 @@ void model_render (model* m) {
 		unsigned material_id = m -> obj.vertex_groups.data[i].material_id;
 		MTL_mat mat = m -> obj.material_library.materials[material_id];
 		shader_set_vec3 (m -> mat.shader, "diffuse_color", glm::vec3 (mat.diffuse_color[0], mat.diffuse_color[1], mat.diffuse_color[2]));
+		shader_set_vec3 (m -> mat.shader, "ambient_color", glm::vec3 (1.0f, 1.0f, 1.0f));
 		glDrawArrays (GL_TRIANGLES, m -> obj.vertex_groups.data[i].start_index, 
 									(m -> obj.vertex_groups.data[i].end_index - m -> obj.vertex_groups.data[i].start_index) + 1);
 	}
