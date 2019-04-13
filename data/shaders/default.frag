@@ -26,7 +26,7 @@ void main () {
 	vec3 view_dir = normalize (view_direction);
 	vec3 halfway_dir = normalize (light_direction + view_dir);
 	float spec = pow (max (dot (norm, halfway_dir), 0.0), 16.0);
-	vec3 specular = 0.5 * spec * diffuse_color; 
+	vec3 specular = 0.5 * spec * specular_color; 
 
 	vec3 color = ambient + diffuse + specular;
 	frag_color = vec4 (color, 1.0);

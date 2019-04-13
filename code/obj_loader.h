@@ -21,7 +21,10 @@ struct vert_group_array {
 
 struct MTL_mat {
 	char name[32];
+	float ambient_color[3];
 	float diffuse_color[3];
+	float specular_color[3];
+	float specular_exponent;
 };
 
 struct MTL {

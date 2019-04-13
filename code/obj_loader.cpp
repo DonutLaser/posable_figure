@@ -168,12 +168,30 @@ static MTL parse_mtllib (const char* path) {
 
 			strcpy_s (result.materials[current_material].name, 32, token);
 		}
+		else if (strcmp (token, "Ns") == 0) 
+			result.materials[current_material].specular_exponent = parse_float (token);
+		else if (strcmp (token, "Ka") == 0) {
+			for (unsigned i = 0; i < 3; ++i) {
+				free (token);
+				token = get_next_token (&contents);
+
+				result.materials[current_material].ambient_color[i] = parse_float (token);
+			}
+		}
 		else if (strcmp (token, "Kd") == 0) {
 			for (unsigned i = 0; i < 3; ++i) {
 				free (token);
 				token = get_next_token (&contents);
 
 				result.materials[current_material].diffuse_color[i] = parse_float (token);
+			}
+		}
+		else if (strcmp (token, "Ks") == 0) {
+			for (unsigned i = 0; i < 3; ++i) {
+				free (token);
+				token = get_next_token (&contents);
+
+				result.materials[current_material].specular_color[i] = parse_float (token);
 			}
 		}
 
