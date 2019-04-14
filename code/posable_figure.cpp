@@ -43,35 +43,46 @@ static void handle_input (app* App, input in, float dt) {
 		arc_ball_zoom (&App -> camera, -in.scroll_dir);
 }
 
-void app_init (void* memory, platform_api api) {
-	app* App = (app*)memory;
-
-	char* vert_source;
+static unsigned load_shader (platform_api api, const char* vert_path, const char* frag_path) {
+	char* vert_source; 
 	char* frag_source;
-	api.read_file (SHADER_VERT_SOURCE, &vert_source);
-	api.read_file (SHADER_FRAG_SOURCE, &frag_source);
-	unsigned default_shader = shader_new (vert_source, frag_source);
+	api.read_file (vert_path, &vert_source);
+	api.read_file (frag_path, &frag_source);
+
+	unsigned result = shader_new (vert_source, frag_source);
+
 	free (vert_source);
 	free (frag_source);
 
-	material mat = material_new (default_shader);
+	return result;
+}
+
+void app_init (void* memory, platform_api api) {
+	app* App = (app*)memory;
+
+	unsigned default_shader = load_shader (api, DEFAULT_VERT_SOURCE, DEFAULT_FRAG_SOURCE);
+	unsigned unlit_shader = load_shader (api, UNLIT_VERT_SOURCE, UNLIT_FRAG_SOURCE);
 
 	OBJ model = obj_load (MODEL_SOURCE);
+	OBJ gizmo = obj_load (GIZMO_SOURCE);
 
-	App -> figure = model_new (model, mat);
+	App -> figure = model_new (model, default_shader);
+	App -> gizmo = model_new (gizmo, unlit_shader);
 	App -> camera = arc_ball_new (glm::vec3 (0.0f, 0.0f, 0.0f));
 
-	shader_use (App -> figure.mat.shader);
 	unsigned window_width, window_height;
 	api.get_window_size (&window_width, &window_height);
 	glm::mat4 projection = glm::mat4 (1.0f);
 	projection = glm::perspective (glm::radians (App -> camera.cam.zoom), (float)window_width / (float)window_height, 0.1f, 100.0f);
-	shader_set_mat4 (App -> figure.mat.shader, "projection", projection);
-
 	glm::mat4 view = camera_get_view_matrix (&App -> camera.cam);
-	shader_set_mat4 (App -> figure.mat.shader, "view", view);
+	shader_use (App -> figure.shader_id);
+	shader_set_mat4 (App -> figure.shader_id, "projection", projection);
+	shader_set_mat4 (App -> figure.shader_id, "view", view);
+	shader_set_vec3 (App -> figure.shader_id, "light_direction", glm::vec3 (0.0f, -1.0f, 0.0f));
 
-	shader_set_vec3 (App -> figure.mat.shader, "light_direction", glm::vec3 (0.0f, -1.0f, 0.0f));
+	shader_use (App -> gizmo.shader_id);
+	shader_set_mat4 (App -> gizmo.shader_id, "projection", projection);
+	shader_set_mat4 (App -> gizmo.shader_id, "view", view);
 
 	glEnable (GL_DEPTH_TEST);
 }
@@ -80,12 +91,16 @@ void app_update_and_render (void* memory, platform_api api, input in, float dt) 
 	app* App = (app*)memory;
 
 	if (api.was_window_resized ()) {
-		shader_use (App -> figure.mat.shader);
 		unsigned window_width, window_height;
 		api.get_window_size (&window_width, &window_height);
 		glm::mat4 projection = glm::mat4 (1.0f);
 		projection = glm::perspective (glm::radians (App -> camera.cam.zoom), (float)window_width / (float)window_height, 0.1f, 100.0f);
-		shader_set_mat4 (App -> figure.mat.shader, "projection", projection);	
+
+		shader_use (App -> figure.shader_id);
+		shader_set_mat4 (App -> figure.shader_id, "projection", projection);	
+
+		shader_use (App -> gizmo.shader_id);
+		shader_set_mat4 (App -> figure.shader_id, "projection", projection);
 	}
 
 	handle_input (App, in, dt);
@@ -93,12 +108,15 @@ void app_update_and_render (void* memory, platform_api api, input in, float dt) 
 	glClearColor (BG_COLOR);
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	shader_use (App -> figure.mat.shader);
 	glm::mat4 view = camera_get_view_matrix (&App -> camera.cam);
-	shader_set_mat4 (App -> figure.mat.shader, "view", view);
-	shader_set_vec3 (App -> figure.mat.shader, "view_direction", App -> camera.cam.front);
+	shader_use (App -> figure.shader_id);
+	shader_set_mat4 (App -> figure.shader_id, "view", view);
+	shader_set_vec3 (App -> figure.shader_id, "view_direction", App -> camera.cam.front);
+	shader_use (App -> gizmo.shader_id);
+	shader_set_mat4 (App -> gizmo.shader_id, "view", view);
 
 	model_render (&App -> figure);
+	model_render (&App -> gizmo);
 }
 
 void app_close (void* memory) {

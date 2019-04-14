@@ -9,6 +9,7 @@ struct platform_api;
 
 struct app {
 	model figure;
+	model gizmo;
 	arc_ball camera;
 };
 

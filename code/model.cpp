@@ -8,12 +8,12 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-model model_new (OBJ obj, material mat) {
+model model_new (OBJ obj, unsigned shader_id) {
 	model result = { };
 	result.obj = obj;
 	result.vertex_count = obj.vertices.count / 3;
 	result.position = glm::vec3 (0.0f, 0.0f, 0.0f);
-	result.mat = mat;
+	result.shader_id = shader_id;
 
 	glGenVertexArrays (1, &result.VAO);
 	glGenBuffers (1, &result.VBO);
@@ -40,21 +40,21 @@ model model_new (OBJ obj, material mat) {
 }
 
 void model_render (model* m) {
-	shader_use (m -> mat.shader);
+	shader_use (m -> shader_id);
 
 	glBindVertexArray (m -> VAO);
 
 	glm::mat4 model = glm::mat4 (1.0f);
 	model = glm::translate (model, m -> position);
-	shader_set_mat4 (m -> mat.shader, "model", model);
+	shader_set_mat4 (m -> shader_id, "model", model);
 
 	for (unsigned i = 0; i < m -> obj.vertex_groups.count; ++i) {
 		unsigned material_id = m -> obj.vertex_groups.data[i].material_id;
 		MTL_mat mat = m -> obj.material_library.materials[material_id];
-		shader_set_vec3 (m -> mat.shader, "ambient_color", glm::vec3 (mat.ambient_color[0], mat.ambient_color[1], mat.ambient_color[2]));
-		shader_set_vec3 (m -> mat.shader, "diffuse_color", glm::vec3 (mat.diffuse_color[0], mat.diffuse_color[1], mat.diffuse_color[2]));
-		shader_set_vec3 (m -> mat.shader, "specular_color", glm::vec3 (mat.specular_color[0], mat.specular_color[1], mat.specular_color[2]));
- 		shader_set_float (m -> mat.shader, "specular_exponent", mat.specular_exponent);
+		shader_set_vec3 (m -> shader_id, "ambient_color", glm::vec3 (mat.ambient_color[0], mat.ambient_color[1], mat.ambient_color[2]));
+		shader_set_vec3 (m -> shader_id, "diffuse_color", glm::vec3 (mat.diffuse_color[0], mat.diffuse_color[1], mat.diffuse_color[2]));
+		shader_set_vec3 (m -> shader_id, "specular_color", glm::vec3 (mat.specular_color[0], mat.specular_color[1], mat.specular_color[2]));
+ 		shader_set_float (m -> shader_id, "specular_exponent", mat.specular_exponent);
 		glDrawArrays (GL_TRIANGLES, m -> obj.vertex_groups.data[i].start_index, 
 									(m -> obj.vertex_groups.data[i].end_index - m -> obj.vertex_groups.data[i].start_index) + 1);
 	}
