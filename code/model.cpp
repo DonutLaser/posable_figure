@@ -14,6 +14,7 @@ model model_new (OBJ obj, unsigned shader_id) {
 	result.vertex_count = obj.vertices.count / 3;
 	result.position = glm::vec3 (0.0f, 0.0f, 0.0f);
 	result.shader_id = shader_id;
+	result.visible = true;
 
 	glGenVertexArrays (1, &result.VAO);
 	glGenBuffers (1, &result.VBO);
@@ -40,6 +41,9 @@ model model_new (OBJ obj, unsigned shader_id) {
 }
 
 void model_render (model* m) {
+	if (!m -> visible)
+		return;
+
 	shader_use (m -> shader_id);
 
 	glBindVertexArray (m -> VAO);

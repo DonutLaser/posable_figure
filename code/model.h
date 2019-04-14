@@ -12,6 +12,8 @@ struct model {
 
 	unsigned vertex_count;
 	unsigned shader_id;
+
+	bool visible;
 };
 
 model model_new (OBJ obj, unsigned shader_id);

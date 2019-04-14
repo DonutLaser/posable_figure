@@ -68,6 +68,7 @@ void app_init (void* memory, platform_api api) {
 
 	App -> figure = model_new (model, default_shader);
 	App -> gizmo = model_new (gizmo, unlit_shader);
+	App -> gizmo.visible = false;
 	App -> camera = arc_ball_new (glm::vec3 (0.0f, 0.0f, 0.0f));
 
 	unsigned window_width, window_height;
