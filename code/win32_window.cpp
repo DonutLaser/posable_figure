@@ -85,6 +85,9 @@ static LRESULT CALLBACK window_proc (HWND window, UINT msg, WPARAM w_param, LPAR
 				return 0;
 			}
 			case WM_SETCURSOR: {
+				HCURSOR default_cursor = LoadCursor (NULL, IDC_ARROW);
+				SetCursor (default_cursor);
+
 				if (!wnd -> hide_and_lock_cursor)
 					break;
 
