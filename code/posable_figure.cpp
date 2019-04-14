@@ -71,7 +71,7 @@ void app_init (void* memory, platform_api api) {
 	glm::mat4 view = camera_get_view_matrix (&App -> camera.cam);
 	shader_set_mat4 (App -> figure.mat.shader, "view", view);
 
-	shader_set_vec3 (App -> figure.mat.shader, "light_direction", glm::vec3 (-0.2f, -1.0f, -0.3f));
+	shader_set_vec3 (App -> figure.mat.shader, "light_direction", glm::vec3 (0.0f, -1.0f, 0.0f));
 
 	glEnable (GL_DEPTH_TEST);
 }

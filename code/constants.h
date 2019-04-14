@@ -8,7 +8,7 @@
 
 #define SHADER_VERT_SOURCE		"W:/posable_figure/data/shaders/default.vert"
 #define SHADER_FRAG_SOURCE		"W:/posable_figure/data/shaders/default.frag"
-#define MODEL_SOURCE			"W:/posable_figure/data/models/obj_test.obj"
+#define MODEL_SOURCE			"W:/posable_figure/data/models/mannequin.obj"
 
 #define FRONT_VIEW_YAW 0.0f
 #define FRONT_VIEW_PITCH 0.0f

@@ -13,6 +13,7 @@ uniform vec3 view_direction;
 out vec4 frag_color;
 
 void main () {
+	float gamma = 2.2;
 	// Calculate ambient color
 	vec3 ambient = vec3 (0.1) * ambient_color;
 
@@ -30,4 +31,5 @@ void main () {
 
 	vec3 color = ambient + diffuse + specular;
 	frag_color = vec4 (color, 1.0);
+	frag_color.rgb = pow (frag_color.rgb, vec3 (1.0 / gamma));
 }
