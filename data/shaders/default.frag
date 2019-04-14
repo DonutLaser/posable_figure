@@ -6,6 +6,7 @@ in vec3 out_normal;
 uniform vec3 ambient_color;
 uniform vec3 diffuse_color;
 uniform vec3 specular_color;
+uniform float specular_exponent;
 
 uniform vec3 light_direction;
 uniform vec3 view_direction;
@@ -26,7 +27,7 @@ void main () {
 	// Calculate specular color
 	vec3 view_dir = normalize (view_direction);
 	vec3 halfway_dir = normalize (light_direction + view_dir);
-	float spec = pow (max (dot (norm, halfway_dir), 0.0), 16.0);
+	float spec = pow (max (dot (norm, halfway_dir), 0.0), specular_exponent);
 	vec3 specular = 0.5 * spec * specular_color; 
 
 	vec3 color = ambient + diffuse + specular;

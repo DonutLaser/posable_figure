@@ -35,6 +35,7 @@ void gl_extensions_init () {
 	glDeleteShader = (PFNGLDELETESHADERPROC)load_method ("glDeleteShader");
 	glUseProgram = (PFNGLUSEPROGRAMPROC)load_method ("glUseProgram");
 	glGetUniformLocation = (PFNGLGETUNIFORMLOCATIONPROC)load_method ("glGetUniformLocation");
+	glUniform1f = (PFNGLUNIFORM1FPROC)load_method ("glUniform1f");
 	glUniform3f = (PFNGLUNIFORM3FPROC)load_method ("glUniform3f");
 	glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)load_method ("glUniformMatrix4fv");
 }
@@ -62,5 +63,6 @@ PFNGLGETPROGRAMINFOLOGPROC glGetProgramInfoLog;
 PFNGLDELETESHADERPROC glDeleteShader;
 PFNGLUSEPROGRAMPROC glUseProgram;
 PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
+PFNGLUNIFORM1FPROC glUniform1f;
 PFNGLUNIFORM3FPROC glUniform3f;
 PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;

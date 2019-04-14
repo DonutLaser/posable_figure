@@ -101,6 +101,8 @@ typedef void (APIENTRYP PFNGLUSEPROGRAMPROC) (GLuint program);
 extern PFNGLUSEPROGRAMPROC glUseProgram;
 typedef GLint (APIENTRYP PFNGLGETUNIFORMLOCATIONPROC) (GLuint program, const GLchar *name);
 extern PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
+typedef void (APIENTRYP PFNGLUNIFORM1FPROC) (GLint location, GLfloat v0);
+extern PFNGLUNIFORM1FPROC glUniform1f;
 typedef void (APIENTRYP PFNGLUNIFORM3FPROC) (GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
 extern PFNGLUNIFORM3FPROC glUniform3f;
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);

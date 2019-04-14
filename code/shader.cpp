@@ -51,6 +51,11 @@ void shader_use (unsigned shader) {
 	glUseProgram (shader);
 }
 
+void shader_set_float (unsigned shader, const char* name, float value) {
+	unsigned location = glGetUniformLocation (shader, name);
+	glUniform1f (location, value);
+}
+
 void shader_set_vec3 (unsigned shader, const char* name, glm::vec3 value) {
 	unsigned location = glGetUniformLocation (shader, name);
 	glUniform3f (location, value.x, value.y, value.z);

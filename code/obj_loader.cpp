@@ -168,8 +168,11 @@ static MTL parse_mtllib (const char* path) {
 
 			strcpy_s (result.materials[current_material].name, 32, token);
 		}
-		else if (strcmp (token, "Ns") == 0) 
+		else if (strcmp (token, "Ns") == 0) {
+			free (token);
+			token = get_next_token (&contents);
 			result.materials[current_material].specular_exponent = parse_float (token);
+		}
 		else if (strcmp (token, "Ka") == 0) {
 			for (unsigned i = 0; i < 3; ++i) {
 				free (token);
