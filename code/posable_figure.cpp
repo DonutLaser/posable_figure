@@ -10,7 +10,25 @@
 #include "gl_extensions.h"
 #include <gl/gl.h>
 
-static void handle_input (app* App, input in, float dt) {
+static void update_projection (app* App, unsigned window_width, unsigned window_height) {
+		glm::mat4 projection = glm::mat4 (1.0f);
+		if (!App -> orthographic_camera)
+			projection = glm::perspective (glm::radians (App -> camera.cam.zoom), (float)window_width / (float)window_height, 0.1f, 100.0f);
+		else {
+			float half_width = (float)window_width / 100 / 2;
+			float half_height = (float)window_height / 100 / 2;
+			float zoom_factor = App -> camera.radius / MAX_RADIUS;
+			projection = glm::ortho (-half_width * zoom_factor, half_width * zoom_factor, -half_height * zoom_factor, half_height * zoom_factor, -1.0f, 100.0f);
+		}
+
+		shader_use (App -> figure.shader_id);
+		shader_set_mat4 (App -> figure.shader_id, "projection", projection);	
+
+		shader_use (App -> gizmo.shader_id);
+		shader_set_mat4 (App -> gizmo.shader_id, "projection", projection);
+}
+
+static void handle_input (app* App, platform_api api, input in, float dt) {
 	if (in.rmb_pressed) {
 		int mouse_delta_x = in.last_mouse_x - in.mouse_x;
 		int mouse_delta_y = in.mouse_y - in.last_mouse_y;
@@ -38,9 +56,22 @@ static void handle_input (app* App, input in, float dt) {
 
 		arc_ball_rotate (&App -> camera);
 	}
+	else if (in.num5_down) {
+		App -> orthographic_camera = !App -> orthographic_camera;
 
-	if (in.scroll_dir != 0)
+		unsigned window_width, window_height;
+		api.get_window_size (&window_width, &window_height);
+		update_projection (App, window_width, window_height);
+	}
+
+	if (in.scroll_dir != 0) {
 		arc_ball_zoom (&App -> camera, -in.scroll_dir);
+		if (App -> orthographic_camera) {
+			unsigned window_width, window_height;
+			api.get_window_size (&window_width, &window_height);
+			update_projection (App, window_width, window_height);
+		}
+	}
 }
 
 static unsigned load_shader (platform_api api, const char* vert_path, const char* frag_path) {
@@ -59,6 +90,7 @@ static unsigned load_shader (platform_api api, const char* vert_path, const char
 
 void app_init (void* memory, platform_api api) {
 	app* App = (app*)memory;
+	App -> orthographic_camera = false;
 
 	unsigned default_shader = load_shader (api, DEFAULT_VERT_SOURCE, DEFAULT_FRAG_SOURCE);
 	unsigned unlit_shader = load_shader (api, UNLIT_VERT_SOURCE, UNLIT_FRAG_SOURCE);
@@ -73,16 +105,14 @@ void app_init (void* memory, platform_api api) {
 
 	unsigned window_width, window_height;
 	api.get_window_size (&window_width, &window_height);
-	glm::mat4 projection = glm::mat4 (1.0f);
-	projection = glm::perspective (glm::radians (App -> camera.cam.zoom), (float)window_width / (float)window_height, 0.1f, 100.0f);
+	update_projection (App, window_width, window_height);
+
 	glm::mat4 view = camera_get_view_matrix (&App -> camera.cam);
 	shader_use (App -> figure.shader_id);
-	shader_set_mat4 (App -> figure.shader_id, "projection", projection);
 	shader_set_mat4 (App -> figure.shader_id, "view", view);
-	shader_set_vec3 (App -> figure.shader_id, "light_direction", glm::vec3 (0.0f, -1.0f, 0.0f));
+	shader_set_vec3 (App -> figure.shader_id, "light_direction", glm::vec3 (-1.0f, -1.0f, 0.0f));
 
 	shader_use (App -> gizmo.shader_id);
-	shader_set_mat4 (App -> gizmo.shader_id, "projection", projection);
 	shader_set_mat4 (App -> gizmo.shader_id, "view", view);
 
 	glEnable (GL_DEPTH_TEST);
@@ -94,17 +124,10 @@ void app_update_and_render (void* memory, platform_api api, input in, float dt) 
 	if (api.was_window_resized ()) {
 		unsigned window_width, window_height;
 		api.get_window_size (&window_width, &window_height);
-		glm::mat4 projection = glm::mat4 (1.0f);
-		projection = glm::perspective (glm::radians (App -> camera.cam.zoom), (float)window_width / (float)window_height, 0.1f, 100.0f);
-
-		shader_use (App -> figure.shader_id);
-		shader_set_mat4 (App -> figure.shader_id, "projection", projection);	
-
-		shader_use (App -> gizmo.shader_id);
-		shader_set_mat4 (App -> figure.shader_id, "projection", projection);
+		update_projection (App, window_width, window_height);
 	}
 
-	handle_input (App, in, dt);
+	handle_input (App, api, in, dt);
 
 	glClearColor (BG_COLOR);
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

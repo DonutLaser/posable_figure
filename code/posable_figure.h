@@ -11,6 +11,8 @@ struct app {
 	model figure;
 	model gizmo;
 	arc_ball camera;
+
+	bool orthographic_camera;
 };
 
 void app_init (void* memory, platform_api platform);

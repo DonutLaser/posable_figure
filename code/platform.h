@@ -21,6 +21,7 @@ struct input {
 	bool num1_down;
 	bool num3_down;
 	bool num7_down;
+	bool num5_down;
 };
 
 struct platform_api {

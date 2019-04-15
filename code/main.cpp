@@ -51,6 +51,7 @@ GUI_MAIN {
 		in.num1_down = is_key_down (global_window, KEY_NUM1);
 		in.num3_down = is_key_down (global_window, KEY_NUM3);
 		in.num7_down = is_key_down (global_window, KEY_NUM7);
+		in.num5_down = is_key_down (global_window, KEY_NUM5);
 
 		in.scroll_dir = global_window -> input -> mouse_scroll_direction;
 
