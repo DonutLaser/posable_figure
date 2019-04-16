@@ -8,20 +8,23 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
-model model_new (OBJ obj, unsigned shader_id) {
-	model result = { };
-	result.obj = obj;
-	result.vertex_count = obj.vertices.count / 3;
-	result.position = glm::vec3 (0.0f, 0.0f, 0.0f);
-	result.shader_id = shader_id;
-	result.visible = true;
+model* model_new (OBJ obj, unsigned shader_id) {
+	model* result = (model*)malloc (sizeof (model));
+	result -> obj = obj;
+	result -> vertex_count = obj.vertices.count / 3;
+	result -> position = glm::vec3 (0.0f, 0.0f, 0.0f);
+	result -> rotation = glm::vec3 (0.0f, 0.0f, 0.0f);
+	result -> angle = 0.0f;
+	result -> shader_id = shader_id;
+	result -> visible = true;
+	result -> parent = NULL;
 
-	glGenVertexArrays (1, &result.VAO);
-	glGenBuffers (1, &result.VBO);
+	glGenVertexArrays (1, &result -> VAO);
+	glGenBuffers (1, &result -> VBO);
 
-	glBindVertexArray (result.VAO);
+	glBindVertexArray (result -> VAO);
 
-	glBindBuffer (GL_ARRAY_BUFFER, result.VBO);
+	glBindBuffer (GL_ARRAY_BUFFER, result -> VBO);
 	glBufferData (GL_ARRAY_BUFFER, sizeof (float) * (obj.vertices.count + obj.uv.count + obj.normals.count), NULL, GL_STATIC_DRAW);
 
 	glBufferSubData (GL_ARRAY_BUFFER, 0, sizeof (float) * obj.vertices.count, obj.vertices.data);
@@ -48,8 +51,16 @@ void model_render (model* m) {
 
 	glBindVertexArray (m -> VAO);
 
+	glm::vec3 final_position = m -> position;
+	model* root = m -> parent;
+	while (root) {
+		final_position += root -> position;
+		root = root -> parent;
+	}
+
 	glm::mat4 model = glm::mat4 (1.0f);
-	model = glm::translate (model, m -> position);
+	model = glm::translate (model, final_position);
+	model = glm::rotate (model, glm::radians (m -> angle), m -> position + glm::vec3 (0.0f, 0.0f, 1.0f));
 	shader_set_mat4 (m -> shader_id, "model", model);
 
 	for (unsigned i = 0; i < m -> obj.vertex_groups.count; ++i) {
