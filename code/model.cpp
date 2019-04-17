@@ -8,16 +8,27 @@
 #include "glm/gtc/matrix_transform.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
+static void recalculate_world_position (model* m) {
+	m -> world_position = m -> position;
+	model* root = m -> parent;
+	while (root) {
+		m -> world_position += root -> position;
+		root = root -> parent;
+	}
+}
+
 model* model_new (OBJ obj, unsigned shader_id) {
 	model* result = (model*)malloc (sizeof (model));
 	result -> obj = obj;
 	result -> vertex_count = obj.vertices.count / 3;
 	result -> position = glm::vec3 (0.0f, 0.0f, 0.0f);
+	result -> world_position = result -> position;
 	result -> rotation = glm::vec3 (0.0f, 0.0f, 0.0f);
-	result -> angle = 0.0f;
+	result -> scale = 1.0f; 
 	result -> shader_id = shader_id;
 	result -> visible = true;
 	result -> parent = NULL;
+	result -> bounding_sphere_radius = 0.1f;
 
 	glGenVertexArrays (1, &result -> VAO);
 	glGenBuffers (1, &result -> VBO);
@@ -43,6 +54,16 @@ model* model_new (OBJ obj, unsigned shader_id) {
 	return result;
 }
 
+void model_set_parent (model* main, model* parent) {
+	main -> parent = parent;
+	recalculate_world_position (main);
+}
+
+void model_set_position (model* m, glm::vec3 position) {
+	m -> position = position;
+	recalculate_world_position (m);
+}
+
 void model_render (model* m) {
 	if (!m -> visible)
 		return;
@@ -60,7 +81,7 @@ void model_render (model* m) {
 
 	glm::mat4 model = glm::mat4 (1.0f);
 	model = glm::translate (model, final_position);
-	model = glm::rotate (model, glm::radians (m -> angle), m -> position + glm::vec3 (0.0f, 0.0f, 1.0f));
+	model = glm::scale (model, glm::vec3 (m -> scale, m -> scale, m -> scale));
 	shader_set_mat4 (m -> shader_id, "model", model);
 
 	for (unsigned i = 0; i < m -> obj.vertex_groups.count; ++i) {

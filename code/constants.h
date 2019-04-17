@@ -28,6 +28,7 @@
 #define RIGHT_FOOT				"W:/posable_figure/data/models/right_foot.obj"
 
 #define GIZMO					"W:/posable_figure/data/models/gizmo.obj"
+#define DEBUG_SPHERE			"W:/posable_figure/data/models/debug_bounding_sphere.obj"
 
 #define FRONT_VIEW_YAW 0.0f
 #define FRONT_VIEW_PITCH 0.0f

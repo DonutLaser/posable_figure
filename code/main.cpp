@@ -53,6 +53,8 @@ GUI_MAIN {
 		in.num7_down = is_key_down (global_window, KEY_NUM7);
 		in.num5_down = is_key_down (global_window, KEY_NUM5);
 
+		in.f9_down = is_key_down (global_window, KEY_F9);
+
 		in.scroll_dir = global_window -> input -> mouse_scroll_direction;
 
 		app_update_and_render (app_memory, api, in, dt);

@@ -64,6 +64,8 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 		api.get_window_size (&window_width, &window_height);
 		update_projection (App, window_width, window_height);
 	}
+	else if (in.f9_down)
+		App -> debug = !App -> debug;
 
 	if (in.scroll_dir != 0) {
 		arc_ball_zoom (&App -> camera, -in.scroll_dir);
@@ -108,49 +110,65 @@ static void setup_figure (app* App, unsigned shader) {
 
 	App -> figure[FP_PELVIS] = pelvis_model;
 	App -> figure[FP_CHEST] = chest_model;
-	App -> figure[FP_CHEST] -> parent = App -> figure[FP_PELVIS];
+	model_set_parent (App -> figure[FP_CHEST], App -> figure[FP_PELVIS]);
 	App -> figure[FP_HEAD] = head_model;
-	App -> figure[FP_HEAD] -> parent = App -> figure[FP_CHEST];
+	model_set_parent (App -> figure[FP_HEAD], App -> figure[FP_CHEST]);
 	App -> figure[FP_L_UPPER_ARM] = l_upper_arm_model;
-	App -> figure[FP_L_UPPER_ARM] -> parent = App -> figure[FP_CHEST];
+	model_set_parent (App -> figure[FP_L_UPPER_ARM], App -> figure[FP_CHEST]);
 	App -> figure[FP_L_LOWER_ARM] = l_lower_arm_model;
-	App -> figure[FP_L_LOWER_ARM] -> parent = App -> figure[FP_L_UPPER_ARM];
+	model_set_parent (App -> figure[FP_L_LOWER_ARM], App -> figure[FP_L_UPPER_ARM]);
 	App -> figure[FP_L_HAND] = l_hand_model;
-	App -> figure[FP_L_HAND] -> parent = App -> figure[FP_L_LOWER_ARM];
+	model_set_parent (App -> figure[FP_L_HAND], App -> figure[FP_L_LOWER_ARM]);
 	App -> figure[FP_R_UPPER_ARM] = r_upper_arm_model;
-	App -> figure[FP_R_UPPER_ARM] -> parent = App -> figure[FP_CHEST];
+	model_set_parent (App -> figure[FP_R_UPPER_ARM], App -> figure[FP_CHEST]);
 	App -> figure[FP_R_LOWER_ARM] = r_lower_arm_model;
-	App -> figure[FP_R_LOWER_ARM] -> parent = App -> figure[FP_R_UPPER_ARM];
+	model_set_parent (App -> figure[FP_R_LOWER_ARM], App -> figure[FP_R_UPPER_ARM]);
 	App -> figure[FP_R_HAND] = r_hand_model;
-	App -> figure[FP_R_HAND] -> parent = App -> figure[FP_R_LOWER_ARM];
+	model_set_parent (App -> figure[FP_R_HAND], App -> figure[FP_R_LOWER_ARM]);
 	App -> figure[FP_L_UPPER_LEG] = l_upper_leg_model;
-	App -> figure[FP_L_UPPER_LEG] -> parent = App -> figure[FP_PELVIS];
+	model_set_parent (App -> figure[FP_L_UPPER_LEG], App -> figure[FP_PELVIS]);
 	App -> figure[FP_L_LOWER_LEG] = l_lower_leg_model;
-	App -> figure[FP_L_LOWER_LEG] -> parent = App -> figure[FP_L_UPPER_LEG];
+	model_set_parent (App -> figure[FP_L_LOWER_LEG], App -> figure[FP_L_UPPER_LEG]);
 	App -> figure[FP_L_FOOT] = l_foot_model;
-	App -> figure[FP_L_FOOT] -> parent = App -> figure[FP_L_LOWER_LEG];
+	model_set_parent (App -> figure[FP_L_FOOT], App -> figure[FP_L_LOWER_LEG]);
 	App -> figure[FP_R_UPPER_LEG] = r_upper_leg_model;
-	App -> figure[FP_R_UPPER_LEG] -> parent = App -> figure[FP_PELVIS];
+	model_set_parent (App -> figure[FP_R_UPPER_LEG], App -> figure[FP_PELVIS]);
 	App -> figure[FP_R_LOWER_LEG] = r_lower_leg_model;
-	App -> figure[FP_R_LOWER_LEG] -> parent = App -> figure[FP_R_UPPER_LEG];
+	model_set_parent (App -> figure[FP_R_LOWER_LEG], App -> figure[FP_R_UPPER_LEG]);
 	App -> figure[FP_R_FOOT] = r_foot_model;
-	App -> figure[FP_R_FOOT] -> parent = App -> figure[FP_R_LOWER_LEG];
+	model_set_parent (App -> figure[FP_R_FOOT], App -> figure[FP_R_LOWER_LEG]);
 
-	App -> figure[FP_PELVIS] -> position = glm::vec3 (0.0f, 0.0f, 0.0f);
-	App -> figure[FP_CHEST] -> position = glm::vec3 (0.0f, 0.5f, 0.0f);
-	App -> figure[FP_HEAD] -> position = glm::vec3 (0.0f, 0.9f, 0.0f);
-	App -> figure[FP_L_UPPER_ARM] -> position = glm::vec3 (0.32f, 0.69f, -0.05f);
-	App -> figure[FP_L_LOWER_ARM] -> position = glm::vec3 (0.625f, 0.012f, 0.0f);
-	App -> figure[FP_L_HAND] -> position = glm::vec3 (0.68f, -0.028f, 0.0f);
-	App -> figure[FP_R_UPPER_ARM] -> position = glm::vec3 (-0.32f, 0.69f, -0.05f);
-	App -> figure[FP_R_LOWER_ARM] -> position = glm::vec3 (-0.625f, 0.012f, 0.0f);
-	App -> figure[FP_R_HAND] -> position = glm::vec3 (-0.68f, -0.028f, 0.0f);
-	App -> figure[FP_L_UPPER_LEG] -> position = glm::vec3 (0.15f, -0.115f, -0.005f);
-	App -> figure[FP_L_LOWER_LEG] -> position = glm::vec3 (-0.02f, -1.01f, 0.0f);
-	App -> figure[FP_L_FOOT] -> position = glm::vec3 (0.0f, -1.05f, 0.0f);
-	App -> figure[FP_R_UPPER_LEG] -> position = glm::vec3 (-0.15f, -0.115f, -0.005f);
-	App -> figure[FP_R_LOWER_LEG] -> position = glm::vec3 (0.02f, -1.01f, 0.0f);
-	App -> figure[FP_R_FOOT] -> position = glm::vec3 (0.0f, -1.05f, 0.0f);
+	model_set_position (App -> figure[FP_PELVIS], glm::vec3 (0.0f, 0.0f, 0.0f));
+	model_set_position (App -> figure[FP_CHEST], glm::vec3 (0.0f, 0.5f, 0.0f));
+	model_set_position (App -> figure[FP_HEAD], glm::vec3 (0.0f, 0.9f, 0.0f));
+	model_set_position (App -> figure[FP_L_UPPER_ARM], glm::vec3 (0.32f, 0.69f, -0.05f));
+	model_set_position (App -> figure[FP_L_LOWER_ARM], glm::vec3 (0.625f, 0.012f, 0.0f));
+	model_set_position (App -> figure[FP_L_HAND], glm::vec3 (0.68f, -0.028f, 0.0f));
+	model_set_position (App -> figure[FP_R_UPPER_ARM], glm::vec3 (-0.32f, 0.69f, -0.05f));
+	model_set_position (App -> figure[FP_R_LOWER_ARM], glm::vec3 (-0.625f, 0.012f, 0.0f));
+	model_set_position (App -> figure[FP_R_HAND], glm::vec3 (-0.68f, -0.028f, 0.0f));
+	model_set_position (App -> figure[FP_L_UPPER_LEG], glm::vec3 (0.15f, -0.115f, -0.005f));
+	model_set_position (App -> figure[FP_L_LOWER_LEG], glm::vec3 (-0.02f, -1.01f, 0.0f));
+	model_set_position (App -> figure[FP_L_FOOT], glm::vec3 (0.0f, -1.05f, 0.0f));
+	model_set_position (App -> figure[FP_R_UPPER_LEG], glm::vec3 (-0.15f, -0.115f, -0.005f));
+	model_set_position (App -> figure[FP_R_LOWER_LEG], glm::vec3 (0.02f, -1.01f, 0.0f));
+	model_set_position (App -> figure[FP_R_FOOT], glm::vec3 (0.0f, -1.05f, 0.0f));
+
+	App -> figure[FP_PELVIS] -> bounding_sphere_radius = 0.0f;
+	App -> figure[FP_CHEST] -> bounding_sphere_radius = 0.2f;
+	App -> figure[FP_HEAD] -> bounding_sphere_radius = 0.1f;
+	App -> figure[FP_L_UPPER_ARM] -> bounding_sphere_radius = 0.1f;
+	App -> figure[FP_L_LOWER_ARM] -> bounding_sphere_radius = 0.1f;
+	App -> figure[FP_L_HAND] -> bounding_sphere_radius = 0.1f;
+	App -> figure[FP_R_UPPER_ARM] -> bounding_sphere_radius = 0.1f;
+	App -> figure[FP_R_LOWER_ARM] -> bounding_sphere_radius = 0.1f;
+	App -> figure[FP_R_HAND] -> bounding_sphere_radius = 0.1f;
+	App -> figure[FP_L_UPPER_LEG] -> bounding_sphere_radius = 0.1f;
+	App -> figure[FP_L_LOWER_LEG] -> bounding_sphere_radius = 0.1f;
+	App -> figure[FP_L_FOOT] -> bounding_sphere_radius = 0.1f;
+	App -> figure[FP_R_UPPER_LEG] -> bounding_sphere_radius = 0.1f;
+	App -> figure[FP_R_LOWER_LEG] -> bounding_sphere_radius = 0.1f;
+	App -> figure[FP_R_FOOT] -> bounding_sphere_radius = 0.1f;
 }
 
 static void render_figure (app* App, glm::mat4 view_matrix) {
@@ -174,6 +192,8 @@ void app_init (void* memory, platform_api api) {
 	App -> gizmo -> visible = false;
 	App -> camera = arc_ball_new (glm::vec3 (0.0f, 0.0f, 0.0f));
 
+	App -> debug_sphere = model_new (obj_load (DEBUG_SPHERE), unlit_shader);
+
 	unsigned window_width, window_height;
 	api.get_window_size (&window_width, &window_height);
 	update_projection (App, window_width, window_height);
@@ -187,6 +207,8 @@ void app_init (void* memory, platform_api api) {
 	shader_set_mat4 (App -> gizmo -> shader_id, "view", view);
 
 	glEnable (GL_DEPTH_TEST);
+
+	App -> debug = false;
 }
 
 void app_update_and_render (void* memory, platform_api api, input in, float dt) {
@@ -209,6 +231,14 @@ void app_update_and_render (void* memory, platform_api api, input in, float dt) 
 	model_render (App -> gizmo);
 
 	render_figure (App, view);
+
+	if (App -> debug) {
+		for (unsigned i = 0; i < FP_COUNT; ++i) {
+			App -> debug_sphere -> scale = App -> figure[i] -> bounding_sphere_radius;
+			model_set_position (App -> debug_sphere, App -> figure[i] -> world_position);
+			model_render (App -> debug_sphere);
+		}
+	}
 }
 
 void app_close (void* memory) {
@@ -221,4 +251,6 @@ void app_close (void* memory) {
 
 	obj_delete (App -> gizmo -> obj);
 	free (App -> gizmo);
+	obj_delete (App -> debug_sphere -> obj);
+	free (App -> debug_sphere);
 }

@@ -21,9 +21,11 @@ enum figrure_part {
 struct app {
 	model* figure[FP_COUNT];
 	model* gizmo;
+	model* debug_sphere;
 	arc_ball camera;
 
 	bool orthographic_camera;
+	bool debug;
 };
  
 void app_init (void* memory, platform_api platform);
