@@ -45,7 +45,7 @@ GUI_MAIN {
 		in.last_mouse_y = global_window -> input -> last_mouse_y;
 		in.mouse_x = global_window -> input -> mouse_x;
 		in.mouse_y = global_window -> input -> mouse_y;
-		in.lmb_pressed = is_key_pressed (global_window, KEY_LMB);
+		in.lmb_down = is_key_down (global_window, KEY_LMB);
 		in.rmb_pressed = is_key_pressed (global_window, KEY_RMB);
 
 		in.num1_down = is_key_down (global_window, KEY_NUM1);

@@ -15,7 +15,7 @@ struct input {
 	int mouse_x;
 	int mouse_y;
 
-	bool lmb_pressed;
+	bool lmb_down;
 	bool rmb_pressed;
 
 	bool num1_down;

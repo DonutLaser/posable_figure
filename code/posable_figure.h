@@ -24,7 +24,6 @@ struct app {
 	model* debug_sphere;
 	arc_ball camera;
 
-	bool orthographic_camera;
 	bool debug;
 };
  

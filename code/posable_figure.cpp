@@ -1,6 +1,7 @@
 #include "posable_figure.h"
 
 #include "glm/glm.hpp"
+#include "glm/gtx/intersect.hpp"
 
 #include "obj_loader.h"
 #include "platform.h"
@@ -11,22 +12,15 @@
 #include <gl/gl.h>
 
 static void update_projection (app* App, unsigned window_width, unsigned window_height) {
-		glm::mat4 projection = glm::mat4 (1.0f);
-		if (!App -> orthographic_camera)
-			projection = glm::perspective (glm::radians (App -> camera.cam.zoom), (float)window_width / (float)window_height, 0.1f, 100.0f);
-		else {
-			float half_width = (float)window_width / 100 / 2;
-			float half_height = (float)window_height / 100 / 2;
-			float zoom_factor = App -> camera.radius / MAX_RADIUS;
-			projection = glm::ortho (-half_width * zoom_factor, half_width * zoom_factor, -half_height * zoom_factor, half_height * zoom_factor, -1.0f, 100.0f);
-		}
+	float zoom_factor = App -> camera.radius / MAX_RADIUS;
+	camera_recalculate_projection (&App -> camera.cam, (float)window_width, (float)window_height, zoom_factor);
 
-		shader_use (App -> figure[0] -> shader_id);
-		for (unsigned i = 0; i < FP_COUNT; ++i) 
-			shader_set_mat4 (App -> figure[i] -> shader_id, "projection", projection);
+	shader_use (App -> figure[0] -> shader_id);
+	for (unsigned i = 0; i < FP_COUNT; ++i) 
+		shader_set_mat4 (App -> figure[i] -> shader_id, "projection", App -> camera.cam.projection);
 
-		shader_use (App -> gizmo -> shader_id);
-		shader_set_mat4 (App -> gizmo -> shader_id, "projection", projection);
+	shader_use (App -> gizmo -> shader_id);
+	shader_set_mat4 (App -> gizmo -> shader_id, "projection", App -> camera.cam.projection);
 }
 
 static void handle_input (app* App, platform_api api, input in, float dt) {
@@ -58,7 +52,7 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 		arc_ball_rotate (&App -> camera);
 	}
 	else if (in.num5_down) {
-		App -> orthographic_camera = !App -> orthographic_camera;
+		App -> camera.cam.orthographic = !App -> camera.cam.orthographic;
 
 		unsigned window_width, window_height;
 		api.get_window_size (&window_width, &window_height);
@@ -66,10 +60,37 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 	}
 	else if (in.f9_down)
 		App -> debug = !App -> debug;
+	else if (in.lmb_down) {
+		unsigned window_width, window_height;
+		api.get_window_size (&window_width, &window_height);
+		glm::vec4 viewport = glm::vec4 (0.0f, 0.0f, (float)window_width, (float)window_height);
+
+		glm::mat4 view_matrix = camera_get_view_matrix (&App -> camera.cam);
+
+		glm::vec3 world_near = glm::unProject (glm::vec3 (in.mouse_x, (float)(window_height - in.mouse_y), 0.0f), 
+											   view_matrix, App -> camera.cam.projection, viewport);
+		glm::vec3 world_far = glm::unProject (glm::vec3 (in.mouse_x, (float)(window_height - in.mouse_y), 1.0f), 
+											  view_matrix, App -> camera.cam.projection, viewport);
+
+		for (unsigned i = 0; i < FP_COUNT; ++i) {
+			glm::vec3 position = App -> figure[i] -> world_position;
+			float radius = App -> figure[i] -> bounding_sphere_radius;
+
+			glm::vec3 intersection_point1 = glm::vec3 (0.0f);
+			glm::vec3 intersection_normal1 = glm::vec3 (0.0f);
+			glm::vec3 intersection_point2 = glm::vec3 (0.0f);
+			glm::vec3 intersection_normal2 = glm::vec3 (0.0f);
+			if (glm::intersectLineSphere (world_near, world_far, position, radius, intersection_point1, intersection_normal1, intersection_point2, intersection_normal2)) {
+				App -> gizmo -> visible = true;
+				model_set_position (App -> gizmo, position);
+				break;
+			}
+		}
+	}
 
 	if (in.scroll_dir != 0) {
 		arc_ball_zoom (&App -> camera, -in.scroll_dir);
-		if (App -> orthographic_camera) {
+		if (App -> camera.cam.orthographic) {
 			unsigned window_width, window_height;
 			api.get_window_size (&window_width, &window_height);
 			update_projection (App, window_width, window_height);
@@ -181,7 +202,6 @@ static void render_figure (app* App, glm::mat4 view_matrix) {
 
 void app_init (void* memory, platform_api api) {
 	app* App = (app*)memory;
-	App -> orthographic_camera = false;
 
 	unsigned default_shader = load_shader (api, DEFAULT_VERT_SOURCE, DEFAULT_FRAG_SOURCE);
 	unsigned unlit_shader = load_shader (api, UNLIT_VERT_SOURCE, UNLIT_FRAG_SOURCE);
@@ -190,7 +210,11 @@ void app_init (void* memory, platform_api api) {
 
 	App -> gizmo = model_new (obj_load (GIZMO), unlit_shader);
 	App -> gizmo -> visible = false;
+
 	App -> camera = arc_ball_new (glm::vec3 (0.0f, 0.0f, 0.0f));
+	App -> camera.cam.orthographic = false;
+	App -> camera.cam.near_plane = 0.1f;
+	App -> camera.cam.far_plane = 100.0f;
 
 	App -> debug_sphere = model_new (obj_load (DEBUG_SPHERE), unlit_shader);
 
