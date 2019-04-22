@@ -6,11 +6,13 @@
 
 struct model {
 	OBJ obj;
+
 	glm::vec3 world_position;
 	glm::vec3 position;
 	glm::vec3 rotation;
 	float scale;
 	float bounding_sphere_radius;
+
 	model* parent;
 
 	unsigned VAO;
@@ -20,6 +22,8 @@ struct model {
 	unsigned shader_id;
 
 	bool visible;
+
+	glm::vec3 multiply_color;
 };
 
 model* model_new (OBJ obj, unsigned shader_id);

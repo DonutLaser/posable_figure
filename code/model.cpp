@@ -29,6 +29,7 @@ model* model_new (OBJ obj, unsigned shader_id) {
 	result -> visible = true;
 	result -> parent = NULL;
 	result -> bounding_sphere_radius = 0.1f;
+	result -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
 
 	glGenVertexArrays (1, &result -> VAO);
 	glGenBuffers (1, &result -> VBO);
@@ -90,6 +91,7 @@ void model_render (model* m) {
 		shader_set_vec3 (m -> shader_id, "ambient_color", glm::vec3 (mat.ambient_color[0], mat.ambient_color[1], mat.ambient_color[2]));
 		shader_set_vec3 (m -> shader_id, "diffuse_color", glm::vec3 (mat.diffuse_color[0], mat.diffuse_color[1], mat.diffuse_color[2]));
 		shader_set_vec3 (m -> shader_id, "specular_color", glm::vec3 (mat.specular_color[0], mat.specular_color[1], mat.specular_color[2]));
+		shader_set_vec3 (m -> shader_id, "multiply_color", glm::vec3 (m -> multiply_color.x, m -> multiply_color.y, m -> multiply_color.z));
  		shader_set_float (m -> shader_id, "specular_exponent", mat.specular_exponent);
 		glDrawArrays (GL_TRIANGLES, m -> obj.vertex_groups.data[i].start_index, 
 									(m -> obj.vertex_groups.data[i].end_index - m -> obj.vertex_groups.data[i].start_index) + 1);

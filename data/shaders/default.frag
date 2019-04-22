@@ -6,6 +6,7 @@ in vec3 out_normal;
 uniform vec3 ambient_color;
 uniform vec3 diffuse_color;
 uniform vec3 specular_color;
+uniform vec3 multiply_color;
 uniform float specular_exponent;
 
 uniform vec3 light_direction;
@@ -31,6 +32,6 @@ void main () {
 	vec3 specular = 0.5 * spec * specular_color; 
 
 	vec3 color = ambient + diffuse + specular;
-	frag_color = vec4 (color, 1.0);
+	frag_color = vec4 (color, 1.0) * vec4 (multiply_color, 1.0);
 	frag_color.rgb = pow (frag_color.rgb, vec3 (1.0 / gamma));
 }

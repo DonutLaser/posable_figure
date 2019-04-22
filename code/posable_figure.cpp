@@ -11,6 +11,22 @@
 #include "gl_extensions.h"
 #include <gl/gl.h>
 
+struct ray {
+	glm::vec3 start;
+	glm::vec3 end;
+};
+
+static ray get_ray (app* App, unsigned window_width, unsigned window_height, glm::vec2 mouse_pos) {
+	glm::vec4 viewport = glm::vec4 (0.0f, 0.0f, (float)window_width, (float)window_height);
+	glm::mat4 view_matrix = camera_get_view_matrix (&App -> camera.cam);
+	glm::vec3 world_near = glm::unProject (glm::vec3 (mouse_pos.x, (float)(window_height - mouse_pos.y), 0.0f), 
+										   view_matrix, App -> camera.cam.projection, viewport);
+	glm::vec3 world_far = glm::unProject (glm::vec3 (mouse_pos.x, (float)(window_height - mouse_pos.y), 1.0f), 
+										  view_matrix, App -> camera.cam.projection, viewport);
+
+	return { world_near, world_far };
+}
+
 static void update_projection (app* App, unsigned window_width, unsigned window_height) {
 	float zoom_factor = App -> camera.radius / MAX_RADIUS;
 	camera_recalculate_projection (&App -> camera.cam, (float)window_width, (float)window_height, zoom_factor);
@@ -19,11 +35,51 @@ static void update_projection (app* App, unsigned window_width, unsigned window_
 	for (unsigned i = 0; i < FP_COUNT; ++i) 
 		shader_set_mat4 (App -> figure[i] -> shader_id, "projection", App -> camera.cam.projection);
 
-	shader_use (App -> gizmo -> shader_id);
-	shader_set_mat4 (App -> gizmo -> shader_id, "projection", App -> camera.cam.projection);
+	shader_use (App -> rotation_gizmo[0] -> shader_id);
+	for (unsigned i = 0; i < GP_COUNT; ++i)
+		shader_set_mat4 (App -> rotation_gizmo[i] -> shader_id, "projection", App -> camera.cam.projection);
 }
 
 static void handle_input (app* App, platform_api api, input in, float dt) {
+	if (App -> joint_selected) {
+		unsigned window_width, window_height;
+		api.get_window_size (&window_width, &window_height);
+		ray r = get_ray (App, window_width, window_height, glm::vec2 (in.mouse_x, in.mouse_y));
+		glm::vec3 ray_direction = glm::normalize (r.end - r.start);
+
+		glm::vec3 plane_normals[GP_COUNT];
+		plane_normals[GP_X_AXIS] = glm::vec3 (1.0f, 0.0f, 0.0f);
+		plane_normals[GP_Y_AXIS] = glm::vec3 (0.0f, 1.0f, 0.0f);
+		plane_normals[GP_Z_AXIS] = glm::vec3 (0.0f, 0.0f, 1.0f);
+
+		for (unsigned i = 0; i < GP_COUNT; ++i) {
+			glm::vec3 plane_center = App -> rotation_gizmo[i] -> world_position;
+			glm::vec3 plane_normal = plane_normals[i];
+
+			float dot = glm::dot (ray_direction, plane_normal);
+			if (dot == 0) {
+				App -> rotation_gizmo[i] -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
+				continue;
+			}
+
+			float d = glm::dot (plane_center - r.start, plane_normal) / dot;
+			glm::vec3 intersection_point = d * ray_direction + r.start;
+
+			glm::vec3 intersection_to_center = plane_center - intersection_point;
+			float sqr_radius = 0.25;
+			float sqr_distance = glm::pow (intersection_to_center.x, 2) +
+								 glm::pow (intersection_to_center.y, 2) +
+								 glm::pow (intersection_to_center.z, 2);
+
+			if (sqr_distance < sqr_radius && sqr_distance > sqr_radius * 0.9f) {
+				App -> rotation_gizmo[i] -> multiply_color = glm::vec3 (0.5f, 0.5f, 0.5f);
+				// Hitting the actual handle
+			}
+			else
+				App -> rotation_gizmo[i] -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
+		}
+	}
+
 	if (in.rmb_pressed) {
 		int mouse_delta_x = in.last_mouse_x - in.mouse_x;
 		int mouse_delta_y = in.mouse_y - in.last_mouse_y;
@@ -58,19 +114,11 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 		api.get_window_size (&window_width, &window_height);
 		update_projection (App, window_width, window_height);
 	}
-	else if (in.f9_down)
-		App -> debug = !App -> debug;
 	else if (in.lmb_down) {
+		bool joint_selected = false;
 		unsigned window_width, window_height;
 		api.get_window_size (&window_width, &window_height);
-		glm::vec4 viewport = glm::vec4 (0.0f, 0.0f, (float)window_width, (float)window_height);
-
-		glm::mat4 view_matrix = camera_get_view_matrix (&App -> camera.cam);
-
-		glm::vec3 world_near = glm::unProject (glm::vec3 (in.mouse_x, (float)(window_height - in.mouse_y), 0.0f), 
-											   view_matrix, App -> camera.cam.projection, viewport);
-		glm::vec3 world_far = glm::unProject (glm::vec3 (in.mouse_x, (float)(window_height - in.mouse_y), 1.0f), 
-											  view_matrix, App -> camera.cam.projection, viewport);
+		ray r = get_ray (App, window_width, window_height, glm::vec2 (in.mouse_x, in.mouse_y));
 
 		for (unsigned i = 0; i < FP_COUNT; ++i) {
 			glm::vec3 position = App -> figure[i] -> world_position;
@@ -80,12 +128,17 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 			glm::vec3 intersection_normal1 = glm::vec3 (0.0f);
 			glm::vec3 intersection_point2 = glm::vec3 (0.0f);
 			glm::vec3 intersection_normal2 = glm::vec3 (0.0f);
-			if (glm::intersectLineSphere (world_near, world_far, position, radius, intersection_point1, intersection_normal1, intersection_point2, intersection_normal2)) {
-				App -> gizmo -> visible = true;
-				model_set_position (App -> gizmo, position);
+			if (glm::intersectLineSphere (r.start, r.end, position, radius, intersection_point1, intersection_normal1, intersection_point2, intersection_normal2)) {
+				joint_selected = true;
+
+				for (unsigned i = 0; i < GP_COUNT; ++i)
+					model_set_position (App -> rotation_gizmo[i], position);
+
 				break;
 			}
 		}
+
+		App -> joint_selected = joint_selected;
 	}
 
 	if (in.scroll_dir != 0) {
@@ -110,6 +163,19 @@ static unsigned load_shader (platform_api api, const char* vert_path, const char
 	free (frag_source);
 
 	return result;
+}
+
+static void setup_gizmo (app* App, unsigned shader) {
+	model* x_axis = model_new (obj_load (GIZMO_X), shader);
+	model* y_axis = model_new (obj_load (GIZMO_Y), shader);
+	model* z_axis = model_new (obj_load (GIZMO_Z), shader);
+
+	App -> rotation_gizmo[GP_X_AXIS] = x_axis;
+	App -> rotation_gizmo[GP_Y_AXIS] = y_axis;
+	App -> rotation_gizmo[GP_Z_AXIS] = z_axis;
+
+	for (unsigned i = 0; i < GP_COUNT; ++i)
+		App -> rotation_gizmo[i] -> scale = 0.5f;
 }
 
 static void setup_figure (app* App, unsigned shader) {
@@ -192,6 +258,16 @@ static void setup_figure (app* App, unsigned shader) {
 	App -> figure[FP_R_FOOT] -> bounding_sphere_radius = 0.1f;
 }
 
+static void render_gizmo (app* App, glm::mat4 view_matrix) {
+	if (!App -> joint_selected)
+		return;
+
+	shader_use (App -> rotation_gizmo[0] -> shader_id);
+	shader_set_mat4 (App -> rotation_gizmo[0] -> shader_id, "view", view_matrix);
+	for (unsigned i = 0; i < GP_COUNT; ++i)
+		model_render (App -> rotation_gizmo[i]);
+}
+
 static void render_figure (app* App, glm::mat4 view_matrix) {
 	shader_use (App -> figure[0] -> shader_id);
 	shader_set_mat4 (App -> figure[0] -> shader_id, "view", view_matrix);
@@ -207,16 +283,12 @@ void app_init (void* memory, platform_api api) {
 	unsigned unlit_shader = load_shader (api, UNLIT_VERT_SOURCE, UNLIT_FRAG_SOURCE);
 
 	setup_figure (App, default_shader);
-
-	App -> gizmo = model_new (obj_load (GIZMO), unlit_shader);
-	App -> gizmo -> visible = false;
+	setup_gizmo (App, unlit_shader);
 
 	App -> camera = arc_ball_new (glm::vec3 (0.0f, 0.0f, 0.0f));
 	App -> camera.cam.orthographic = false;
 	App -> camera.cam.near_plane = 0.1f;
 	App -> camera.cam.far_plane = 100.0f;
-
-	App -> debug_sphere = model_new (obj_load (DEBUG_SPHERE), unlit_shader);
 
 	unsigned window_width, window_height;
 	api.get_window_size (&window_width, &window_height);
@@ -227,12 +299,9 @@ void app_init (void* memory, platform_api api) {
 	shader_set_mat4 (App -> figure[0] -> shader_id, "view", view);
 	shader_set_vec3 (App -> figure[0] -> shader_id, "light_direction", glm::vec3 (-1.0f, -1.0f, 0.0f));
 
-	shader_use (App -> gizmo -> shader_id);
-	shader_set_mat4 (App -> gizmo -> shader_id, "view", view);
-
 	glEnable (GL_DEPTH_TEST);
 
-	App -> debug = false;
+	App -> joint_selected = false;
 }
 
 void app_update_and_render (void* memory, platform_api api, input in, float dt) {
@@ -250,19 +319,9 @@ void app_update_and_render (void* memory, platform_api api, input in, float dt) 
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glm::mat4 view = camera_get_view_matrix (&App -> camera.cam);
-	shader_use (App -> gizmo -> shader_id);
-	shader_set_mat4 (App -> gizmo -> shader_id, "view", view);
-	model_render (App -> gizmo);
 
 	render_figure (App, view);
-
-	if (App -> debug) {
-		for (unsigned i = 0; i < FP_COUNT; ++i) {
-			App -> debug_sphere -> scale = App -> figure[i] -> bounding_sphere_radius;
-			model_set_position (App -> debug_sphere, App -> figure[i] -> world_position);
-			model_render (App -> debug_sphere);
-		}
-	}
+	render_gizmo (App, view);
 }
 
 void app_close (void* memory) {
@@ -272,9 +331,4 @@ void app_close (void* memory) {
 		obj_delete (App -> figure[i] -> obj);
 		free (App -> figure[i]);
 	}
-
-	obj_delete (App -> gizmo -> obj);
-	free (App -> gizmo);
-	obj_delete (App -> debug_sphere -> obj);
-	free (App -> debug_sphere);
 }

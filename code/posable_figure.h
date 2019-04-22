@@ -7,7 +7,7 @@
 struct input;
 struct platform_api;
 
-enum figrure_part { 
+enum figure_part { 
 	FP_PELVIS, 
 	FP_CHEST, 
 	FP_HEAD, 
@@ -18,13 +18,19 @@ enum figrure_part {
 	FP_COUNT
 };
 
+enum gizmo_part {
+	GP_X_AXIS,
+	GP_Y_AXIS,
+	GP_Z_AXIS,
+	GP_COUNT
+};
+
 struct app {
 	model* figure[FP_COUNT];
-	model* gizmo;
-	model* debug_sphere;
+	model* rotation_gizmo[GP_COUNT];
 	arc_ball camera;
 
-	bool debug;
+	bool joint_selected;
 };
  
 void app_init (void* memory, platform_api platform);

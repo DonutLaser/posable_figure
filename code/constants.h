@@ -27,8 +27,9 @@
 #define RIGHT_LOWER_LEG			"W:/posable_figure/data/models/right_lower_leg.obj"
 #define RIGHT_FOOT				"W:/posable_figure/data/models/right_foot.obj"
 
-#define GIZMO					"W:/posable_figure/data/models/gizmo.obj"
-#define DEBUG_SPHERE			"W:/posable_figure/data/models/debug_bounding_sphere.obj"
+#define GIZMO_X					"W:/posable_figure/data/models/gizmo_x.obj"
+#define GIZMO_Y					"W:/posable_figure/data/models/gizmo_y.obj"
+#define GIZMO_Z					"W:/posable_figure/data/models/gizmo_z.obj"
 
 #define FRONT_VIEW_YAW 0.0f
 #define FRONT_VIEW_PITCH 0.0f
