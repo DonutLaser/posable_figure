@@ -41,12 +41,12 @@ static void update_projection (app* App, unsigned window_width, unsigned window_
 }
 
 static void handle_input (app* App, platform_api api, input in, float dt) {
-	if (App -> joint_selected) {
-		unsigned window_width, window_height;
-		api.get_window_size (&window_width, &window_height);
-		ray r = get_ray (App, window_width, window_height, glm::vec2 (in.mouse_x, in.mouse_y));
-		glm::vec3 ray_direction = glm::normalize (r.end - r.start);
+	unsigned window_width, window_height;
+	api.get_window_size (&window_width, &window_height);
+	ray r = get_ray (App, window_width, window_height, glm::vec2 (in.mouse_x, in.mouse_y));
+	glm::vec3 ray_direction = glm::normalize (r.end - r.start);
 
+	if (App -> joint_selected) {
 		glm::vec3 plane_normals[GP_COUNT];
 		plane_normals[GP_X_AXIS] = glm::vec3 (1.0f, 0.0f, 0.0f);
 		plane_normals[GP_Y_AXIS] = glm::vec3 (0.0f, 1.0f, 0.0f);
@@ -78,6 +78,33 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 			else
 				App -> rotation_gizmo[i] -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
 		}
+	}
+	else {
+		bool joint_selected = false;
+		for (unsigned i = 0; i < FP_COUNT; ++i) {
+			glm::vec3 position = App -> figure[i] -> world_position;
+			float radius = App -> figure[i] -> bounding_sphere_radius;
+
+			glm::vec3 intersection_point1 = glm::vec3 (0.0f);
+			glm::vec3 intersection_normal1 = glm::vec3 (0.0f);
+			glm::vec3 intersection_point2 = glm::vec3 (0.0f);
+			glm::vec3 intersection_normal2 = glm::vec3 (0.0f);
+			if (glm::intersectLineSphere (r.start, r.end, position, radius, intersection_point1, intersection_normal1, intersection_point2, intersection_normal2)) {
+				App -> figure[i] -> multiply_color = glm::vec3 (0.5f, 0.5f, 0.5f);
+
+				if (in.lmb_down) {
+					joint_selected = true;
+					for (unsigned i = 0; i < GP_COUNT; ++i)
+						model_set_position (App -> rotation_gizmo[i], position);
+				}
+
+				break;
+			}
+			else
+				App -> figure[i] -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
+		}
+
+		App -> joint_selected = joint_selected;
 	}
 
 	if (in.rmb_pressed) {
