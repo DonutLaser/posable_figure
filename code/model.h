@@ -7,14 +7,6 @@
 struct model {
 	OBJ obj;
 
-	glm::vec3 world_position;
-	glm::vec3 position;
-	glm::vec3 rotation;
-	float scale;
-	float bounding_sphere_radius;
-
-	model* parent;
-
 	unsigned VAO;
 	unsigned VBO;
 
@@ -27,9 +19,6 @@ struct model {
 };
 
 model* model_new (OBJ obj, unsigned shader_id);
-
-void model_set_parent (model* main, model* parent);
-void model_set_position (model* m, glm::vec3 position);
 
 void model_render (model* m);
 

@@ -1,7 +1,7 @@
 #if !defined (POSABLE_FIGURE_H)
 #define POSABLE_FIGURE_H
 
-#include "model.h"
+#include "object.h"
 #include "arc_ball.h"
 
 struct input;
@@ -26,11 +26,12 @@ enum gizmo_part {
 };
 
 struct app {
-	model* figure[FP_COUNT];
-	model* rotation_gizmo[GP_COUNT];
+	object* figure[FP_COUNT];
+	object* rotation_gizmo[GP_COUNT];
 	arc_ball camera;
 
-	bool joint_selected;
+	gizmo_part rotation_axis;
+	object* selected_figure_part;
 };
  
 void app_init (void* memory, platform_api platform);
