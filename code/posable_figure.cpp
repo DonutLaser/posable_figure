@@ -55,17 +55,17 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 
 			if (App -> rotation_axis == GP_X_AXIS) {
 				glm::vec3 rot = App -> selected_figure_part -> t -> rotation;
-				rot.x += x_delta;
+				rot.x += x_delta * ROTATION_SPEED;
 				object_set_rotation (App -> selected_figure_part, rot);
 			}
 			else if (App -> rotation_axis == GP_Y_AXIS) {
 				glm::vec3 rot = App -> selected_figure_part -> t -> rotation;
-				rot.y += x_delta;
+				rot.y += x_delta * ROTATION_SPEED;
 				object_set_rotation (App -> selected_figure_part, rot);
 			}
 			else if (App -> rotation_axis == GP_Z_AXIS) {
 				glm::vec3 rot = App -> selected_figure_part -> t -> rotation;
-				rot.z += x_delta;
+				rot.z += x_delta * ROTATION_SPEED;
 				object_set_rotation (App -> selected_figure_part, rot);
 			}
 		}

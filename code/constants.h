@@ -38,4 +38,6 @@
 #define TOP_VIEW_YAW 0.0f
 #define TOP_VIEW_PITCH 90.0f
 
+#define ROTATION_SPEED 0.2f
+
 #endif
