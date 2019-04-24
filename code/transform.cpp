@@ -40,15 +40,21 @@ static transform* children_array_pop (transform_children* array) {
 	return array -> data[array -> count];
 }
 
+static glm::mat4 generate_model_matrix (transform* t) {
+	glm::mat4 result = glm::mat4 (1.0f);
+	result = glm::translate (result, t -> world_position);
+	result = glm::rotate (result, glm::radians (t -> rotation.x), glm::vec3 (1.0f, 0.0f, 0.0f));
+	result = glm::rotate (result, glm::radians (t -> rotation.y), glm::vec3 (0.0f, 1.0f, 0.0f));
+	result = glm::rotate (result, glm::radians (t -> rotation.z), glm::vec3 (0.0f, 0.0f, 1.0f));
+	result = glm::scale (result, t -> scale);
+
+	return result;
+}
+
 static void update_child (transform* child) {
 	child -> world_position = child -> position;
 
-	child -> model_matrix = glm::mat4 (1.0f);
-	child -> model_matrix = glm::translate (child -> model_matrix, child -> world_position);
-	child -> model_matrix = glm::rotate (child -> model_matrix, glm::radians (child -> rotation.x), glm::vec3 (1.0f, 0.0f, 0.0f));
-	child -> model_matrix = glm::rotate (child -> model_matrix, glm::radians (child -> rotation.y), glm::vec3 (0.0f, 1.0f, 0.0f));
-	child -> model_matrix = glm::rotate (child -> model_matrix, glm::radians (child -> rotation.z), glm::vec3 (0.0f, 0.0f, 1.0f));
-	child -> model_matrix = glm::scale (child -> model_matrix, child -> scale);
+	child -> model_matrix = generate_model_matrix (child);
 	child -> model_matrix = child -> parent -> model_matrix * child -> model_matrix;
 
 	for (unsigned i = 0; i < child -> children.count; ++i)
@@ -59,12 +65,7 @@ static void update_children (transform* t) {
 	t -> world_position = t -> position;
 	t -> world_rotation = t -> rotation;
 
-	t -> model_matrix = glm::mat4 (1.0f);
-	t -> model_matrix = glm::translate (t -> model_matrix, t -> world_position);
-	t -> model_matrix = glm::rotate (t -> model_matrix, glm::radians (t -> rotation.x), glm::vec3 (1.0f, 0.0f, 0.0f));
-	t -> model_matrix = glm::rotate (t -> model_matrix, glm::radians (t -> rotation.y), glm::vec3 (0.0f, 1.0f, 0.0f));
-	t -> model_matrix = glm::rotate (t -> model_matrix, glm::radians (t -> rotation.z), glm::vec3 (0.0f, 0.0f, 1.0f));
-	t -> model_matrix = glm::scale (t -> model_matrix, t -> scale);
+	t -> model_matrix = generate_model_matrix (t);
 
 	if (t -> parent)
 		t -> model_matrix = t -> parent -> model_matrix * t -> model_matrix;

@@ -2,8 +2,10 @@
 #define TRANSFORM_H
 
 #include "glm/glm.hpp"
+// #include "object.h"
 
 struct transform;
+struct object;
 
 struct transform_children {
 	transform** data;
@@ -22,6 +24,7 @@ struct transform {
 
 	transform* parent;
 	transform_children children;
+	object* obj;
 };
 
 transform* transform_new ();
