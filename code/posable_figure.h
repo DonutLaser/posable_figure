@@ -32,6 +32,7 @@ struct app {
 
 	gizmo_part rotation_axis;
 	object* selected_figure_part;
+	object* hover_figure_part;
 };
  
 void app_init (void* memory, platform_api platform);

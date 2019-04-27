@@ -28,6 +28,7 @@ static bool initialize_opengl (HWND window) {
 	format.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER;
 	format.cColorBits = 32;
 	format.cAlphaBits = 8;
+	format.cStencilBits = 8;
 	format.iLayerType = PFD_MAIN_PLANE;
 
 	int format_id = ChoosePixelFormat (dc, &format);

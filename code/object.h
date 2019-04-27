@@ -3,12 +3,10 @@
 
 #include "model.h"
 #include "transform.h"
-#include "collider.h"
 
 struct object {
 	model* m;
 	transform* t;
-	collider* c;
 };
 
 object* object_new ();

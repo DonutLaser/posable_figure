@@ -57,6 +57,10 @@ static void update_child (transform* child) {
 	child -> model_matrix = generate_model_matrix (child);
 	child -> model_matrix = child -> parent -> model_matrix * child -> model_matrix;
 
+	child -> right = glm::vec3 (child -> model_matrix[0][0], child -> model_matrix[1][0], child -> model_matrix [2][0]);
+	child -> up = glm::vec3 (child -> model_matrix[0][1], child -> model_matrix[1][1], child -> model_matrix [2][1]);
+	child -> forward = glm::vec3 (child -> model_matrix[0][2], child -> model_matrix[1][2], child -> model_matrix [2][2]);
+
 	for (unsigned i = 0; i < child -> children.count; ++i)
 		update_child (child -> children.data[i]);
 }
@@ -69,6 +73,10 @@ static void update_children (transform* t) {
 
 	if (t -> parent)
 		t -> model_matrix = t -> parent -> model_matrix * t -> model_matrix;
+
+	t -> right = glm::vec3 (t -> model_matrix[0][0], t -> model_matrix[1][0], t -> model_matrix [2][0]);
+	t -> up = glm::vec3 (t -> model_matrix[0][1], t -> model_matrix[1][1], t -> model_matrix [2][1]);
+	t -> forward = glm::vec3 (t -> model_matrix[0][2], t -> model_matrix[1][2], t -> model_matrix [2][2]);
 
 	for (unsigned i = 0; i < t -> children.count; ++i)
 		update_child (t -> children.data[i]);
@@ -90,13 +98,12 @@ transform* transform_new (glm::vec3 position, glm::vec3 rotation, glm::vec3 scal
 	result -> parent = NULL;
 	result -> children = children_array_new ();
 
-	result -> model_matrix = glm::mat4 (1.0f);
-	result -> model_matrix = glm::translate (result -> model_matrix, result -> world_position);
-	result -> model_matrix = glm::rotate (result -> model_matrix, glm::radians (rotation.x), glm::vec3 (1.0f, 0.0f, 0.0f));
-	result -> model_matrix = glm::rotate (result -> model_matrix, glm::radians (rotation.y), glm::vec3 (0.0f, 1.0f, 0.0f));
-	result -> model_matrix = glm::rotate (result -> model_matrix, glm::radians (rotation.z), glm::vec3 (0.0f, 0.0f, 1.0f));
-	result -> model_matrix = glm::scale (result -> model_matrix, result -> scale);
+	result -> model_matrix = generate_model_matrix (result);
 
+	result -> right = glm::vec3 (result -> model_matrix[0][0], result -> model_matrix[1][0], result -> model_matrix[2][0]);
+	result -> up = glm::vec3 (result -> model_matrix[0][1], result -> model_matrix[1][1], result -> model_matrix[2][1]);
+	result -> forward = glm::vec3 (result -> model_matrix[0][2], result -> model_matrix[1][2], result -> model_matrix[2][2]);
+	
 	return result;
 }
 

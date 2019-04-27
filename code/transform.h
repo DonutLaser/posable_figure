@@ -22,6 +22,10 @@ struct transform {
 	glm::vec3 world_rotation;
 	glm::vec3 scale;
 
+	glm::vec3 right;
+	glm::vec3 up;
+	glm::vec3 forward;
+
 	transform* parent;
 	transform_children children;
 	object* obj;

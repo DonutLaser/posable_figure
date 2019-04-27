@@ -5,6 +5,7 @@
 #define WINDOW_HEIGHT 600
 
 #define BG_COLOR 0.239f, 0.227f, 0.419f, 1.0f
+#define SELECTION_MULTIPLIER_COLOR 0.5f, 0.5f, 0.5f
 
 #define DEFAULT_VERT_SOURCE		"W:/posable_figure/data/shaders/default.vert"
 #define DEFAULT_FRAG_SOURCE		"W:/posable_figure/data/shaders/default.frag"

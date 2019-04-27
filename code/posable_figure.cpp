@@ -11,22 +11,6 @@
 #include "gl_extensions.h"
 #include <gl/gl.h>
 
-struct ray {
-	glm::vec3 start;
-	glm::vec3 end;
-};
-
-static ray get_ray (app* App, unsigned window_width, unsigned window_height, glm::vec2 mouse_pos) {
-	glm::vec4 viewport = glm::vec4 (0.0f, 0.0f, (float)window_width, (float)window_height);
-	glm::mat4 view_matrix = camera_get_view_matrix (&App -> camera.cam);
-	glm::vec3 world_near = glm::unProject (glm::vec3 (mouse_pos.x, (float)(window_height - mouse_pos.y), 0.0f), 
-										   view_matrix, App -> camera.cam.projection, viewport);
-	glm::vec3 world_far = glm::unProject (glm::vec3 (mouse_pos.x, (float)(window_height - mouse_pos.y), 1.0f), 
-										  view_matrix, App -> camera.cam.projection, viewport);
-
-	return { world_near, world_far };
-}
-
 static void update_projection (app* App, unsigned window_width, unsigned window_height) {
 	float zoom_factor = App -> camera.radius / MAX_RADIUS;
 	camera_recalculate_projection (&App -> camera.cam, (float)window_width, (float)window_height, zoom_factor);
@@ -43,9 +27,6 @@ static void update_projection (app* App, unsigned window_width, unsigned window_
 static void handle_input (app* App, platform_api api, input in, float dt) {
 	unsigned window_width, window_height;
 	api.get_window_size (&window_width, &window_height);
-	ray r = get_ray (App, window_width, window_height, glm::vec2 (in.mouse_x, in.mouse_y));
-	glm::vec3 ray_direction = glm::normalize (r.end - r.start);
-	glBindVertexArray (0);
 
 	if (App -> rotation_axis != GP_COUNT) {
 		if (in.lmb_down)
@@ -72,78 +53,46 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 	}
 
 	if (App -> selected_figure_part) {
-		glm::vec3 plane_normals[GP_COUNT];
-		plane_normals[GP_X_AXIS] = glm::vec3 (1.0f, 0.0f, 0.0f);
-		plane_normals[GP_Y_AXIS] = glm::vec3 (0.0f, 1.0f, 0.0f);
-		plane_normals[GP_Z_AXIS] = glm::vec3 (0.0f, 0.0f, 1.0f);
+		unsigned index = 0;
+		glReadPixels (in.mouse_x, window_height - in.mouse_y - 1, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT, &index);
 
-		unsigned unselected_axes_count = 0;
+		if (index != 0 && index >= FP_COUNT) {
+			App -> rotation_gizmo[index - FP_COUNT] -> m -> multiply_color = glm::vec3 (SELECTION_MULTIPLIER_COLOR);
 
-		for (unsigned i = 0; i < GP_COUNT; ++i) {
-			glm::vec3 plane_center = App -> rotation_gizmo[i] -> t -> world_position;
-			glm::vec3 plane_normal = plane_normals[i];
-
-			float dot = glm::dot (ray_direction, plane_normal);
-			if (dot == 0) {
-				App -> rotation_gizmo[i] -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
-				continue;
-			}
-
-			float d = glm::dot (plane_center - r.start, plane_normal) / dot;
-			glm::vec3 intersection_point = d * ray_direction + r.start;
-
-			glm::vec3 intersection_to_center = plane_center - intersection_point;
-			float sqr_radius = 0.25;
-			float sqr_distance = glm::pow (intersection_to_center.x, 2) +
-								 glm::pow (intersection_to_center.y, 2) +
-								 glm::pow (intersection_to_center.z, 2);
-
-			if (sqr_distance < sqr_radius && sqr_distance > sqr_radius * 0.9f) {
-				App -> rotation_gizmo[i] -> m -> multiply_color = glm::vec3 (0.5f, 0.5f, 0.5f);
-
-				if (in.lmb_down)
-					App -> rotation_axis = (gizmo_part)i;
-
-				break;
-			}
-			else {
-				++unselected_axes_count;
-				App -> rotation_gizmo[i] -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
-			}
+			if (in.lmb_down)
+				App -> rotation_axis = (gizmo_part)(index - FP_COUNT);
 		}
+		else {
+			for (unsigned i = 0; i < GP_COUNT; ++i)
+				App -> rotation_gizmo[i] -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
 
-		if (unselected_axes_count == GP_COUNT) {
-			if (in.lmb_down) {
-				if (App -> selected_figure_part) {
-					App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
-					App -> selected_figure_part = NULL;
-				}
+			if (index == 0 && in.lmb_down) {
+				App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
+				App -> selected_figure_part = NULL;
 			}
 		}
 	}
 	else {
-		for (unsigned i = 0; i < FP_COUNT; ++i) {
-			glm::vec3 position = App -> figure[i] -> c -> position;
-			float radius = App -> figure[i] -> c -> radius;
+		unsigned index = 0;
+		glReadPixels (in.mouse_x, window_height - in.mouse_y - 1, 1, 1, GL_STENCIL_INDEX, GL_UNSIGNED_INT, &index);
 
-			glm::vec3 intersection_point1 = glm::vec3 (0.0f);
-			glm::vec3 intersection_normal1 = glm::vec3 (0.0f);
-			glm::vec3 intersection_point2 = glm::vec3 (0.0f);
-			glm::vec3 intersection_normal2 = glm::vec3 (0.0f);
-			if (glm::intersectLineSphere (r.start, r.end, position, radius, intersection_point1, intersection_normal1, intersection_point2, intersection_normal2)) {
-				App -> figure[i] -> m -> multiply_color = glm::vec3 (0.5f, 0.5f, 0.5f);
+		if (index != 0) {
+			if (App -> hover_figure_part)
+				App -> hover_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
 
-				if (in.lmb_down) {
-					App -> selected_figure_part = App -> figure[i];
+			App -> hover_figure_part = App -> figure[index - 1];
+			App -> hover_figure_part -> m -> multiply_color = glm::vec3 (SELECTION_MULTIPLIER_COLOR);
 
-					for (unsigned i = 0; i < GP_COUNT; ++i)
-						transform_set_position (App -> rotation_gizmo[i] -> t, position);
-				}
+			if (in.lmb_down) {
+				App -> selected_figure_part = App -> figure[index - 1];
 
-				break;
+				for (unsigned i = 0; i < GP_COUNT; ++i)
+					object_set_position (App -> rotation_gizmo[i], transform_get_world_position (App -> selected_figure_part -> t));
 			}
-			else
-				App -> figure[i] -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
+		}
+		else {
+			if (App -> hover_figure_part)
+				App -> hover_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
 		}
 	}
 
@@ -211,7 +160,7 @@ static void setup_gizmo (app* App, unsigned shader) {
 	App -> rotation_gizmo[GP_Z_AXIS] = object_new (z_axis);
 
 	for (unsigned i = 0; i < GP_COUNT; ++i)
-		transform_set_scale (App -> rotation_gizmo[i] -> t, glm::vec3 (0.5f, 0.5f, 0.5f));
+		transform_set_scale (App -> rotation_gizmo[i] -> t, glm::vec3 (0.25f, 0.25f, 0.25f));
 }
 
 static void setup_figure (app* App, unsigned shader) {
@@ -276,11 +225,6 @@ static void setup_figure (app* App, unsigned shader) {
 	object_set_position (App -> figure[FP_R_UPPER_LEG], glm::vec3 (-0.15f, -0.115f, -0.005f));
 	object_set_position (App -> figure[FP_R_LOWER_LEG], glm::vec3 (0.02f, -1.01f, 0.0f));
 	object_set_position (App -> figure[FP_R_FOOT], glm::vec3 (0.0f, -1.05f, 0.0f));
-
-	App -> figure[FP_PELVIS] -> c -> radius = 0.0f;
-	App -> figure[FP_CHEST] -> c -> radius = 0.2f;
-	for (unsigned i = FP_HEAD; i < FP_COUNT; ++i)
-		App -> figure[i] -> c -> radius = 0.1f;
 }
 
 static void render_gizmo (app* App, glm::mat4 view_matrix) {
@@ -290,8 +234,10 @@ static void render_gizmo (app* App, glm::mat4 view_matrix) {
 	unsigned shader = App -> rotation_gizmo[0] -> m -> shader_id;
 	shader_use (shader);
 	shader_set_mat4 (shader, "view", view_matrix);
-	for (unsigned i = 0; i < GP_COUNT; ++i)
+	for (unsigned i = 0; i < GP_COUNT; ++i) {
+		glStencilFunc (GL_ALWAYS, i + FP_COUNT, 0xFF);
 		object_render (App -> rotation_gizmo[i]);
+	}
 }
 
 static void render_figure (app* App, glm::mat4 view_matrix) {
@@ -299,8 +245,10 @@ static void render_figure (app* App, glm::mat4 view_matrix) {
 	shader_use (shader);
 	shader_set_mat4 (shader, "view", view_matrix);
 	shader_set_vec3 (shader, "view_direction", App -> camera.cam.front);
-	for (unsigned i = 0; i < FP_COUNT; ++i)
+	for (unsigned i = 0; i < FP_COUNT; ++i) {
+		glStencilFunc (GL_ALWAYS, i + 1, 0xFF);
 		object_render (App -> figure[i]);
+	}
 }
 
 void app_init (void* memory, platform_api api) {
@@ -325,9 +273,13 @@ void app_init (void* memory, platform_api api) {
 	shader_set_vec3 (App -> figure[0] -> m -> shader_id, "light_direction", glm::vec3 (-1.0f, -1.0f, 0.0f));
 
 	glEnable (GL_DEPTH_TEST);
+	glEnable (GL_STENCIL_TEST);
+	glStencilOp (GL_KEEP, GL_KEEP, GL_REPLACE);
+	glStencilMask (0xFF);
 
 	App -> rotation_axis = GP_COUNT;
 	App -> selected_figure_part = NULL;
+	App -> hover_figure_part = NULL;
 }
 
 void app_update_and_render (void* memory, platform_api api, input in, float dt) {
@@ -342,12 +294,16 @@ void app_update_and_render (void* memory, platform_api api, input in, float dt) 
 	handle_input (App, api, in, dt);
 
 	glClearColor (BG_COLOR);
-	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClearStencil (0);
+	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 	glm::mat4 view = camera_get_view_matrix (&App -> camera.cam);
 
 	render_figure (App, view);
+
+	glDisable (GL_DEPTH_TEST);
 	render_gizmo (App, view);
+	glEnable (GL_DEPTH_TEST);
 }
 
 void app_close (void* memory) {
