@@ -3,6 +3,7 @@
 
 #include "object.h"
 #include "arc_ball.h"
+#include "glm/gtc/quaternion.hpp"
 
 struct input;
 struct platform_api;
@@ -33,6 +34,7 @@ struct app {
 	gizmo_part rotation_axis;
 	object* selected_figure_part;
 	object* hover_figure_part;
+	glm::quat last_rotation;
 };
  
 void app_init (void* memory, platform_api platform);
