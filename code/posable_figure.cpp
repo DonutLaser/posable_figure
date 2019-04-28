@@ -167,6 +167,23 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 		if (App -> camera.cam.orthographic)
 			update_projection (App, window_width, window_height);
 	}
+
+	if (in.f3_down) {
+		App -> rotation_axis = GP_COUNT;
+
+		if (App -> hover_figure_part) {
+			App -> hover_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
+			App -> hover_figure_part = NULL;
+		}
+
+		if (App -> selected_figure_part) {
+			App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
+			App -> selected_figure_part = NULL;
+		}
+
+		for (unsigned i = 0; i < FP_COUNT; ++i)
+			transform_set_rotation (App -> figure[i] -> t, glm::quat (glm::vec3 (0.0f, 0.0f, 0.0f)));
+	}
 }
 
 static unsigned load_shader (platform_api api, const char* vert_path, const char* frag_path) {

@@ -26,6 +26,8 @@ struct input {
 	bool x_down;
 	bool y_down;
 	bool z_down;
+
+	bool f3_down;
 };
 
 struct platform_api {
