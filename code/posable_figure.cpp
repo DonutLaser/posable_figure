@@ -66,7 +66,15 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 
 	// Do the rotation axis selection
 	if (App -> selected_figure_part) {
-		if (in.x_down || in.y_down || in.z_down) {
+		if (in.lmb_down) {
+			if (App -> rotation_axis == GP_COUNT) {
+				App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
+				App -> selected_figure_part = NULL;
+			}
+			else
+				App -> rotation_axis = GP_COUNT;
+		}
+		else if (in.x_down || in.y_down || in.z_down) {
 			if (in.x_down)
 				App -> rotation_axis = GP_X_AXIS;
 			else if (in.y_down)
@@ -83,15 +91,6 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 		else {
 			for (unsigned i = 0; i < GP_COUNT; ++i)
 				App -> rotation_gizmo[i] -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
-
-			if (index == 0 && in.lmb_down) {
-				if (App -> rotation_axis == GP_COUNT) {
-					App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
-					App -> selected_figure_part = NULL;
-				}
-				else
-					App -> rotation_axis = GP_COUNT;
-			}
 		}
 	}
 
