@@ -18,19 +18,12 @@ object* object_new (model* m) {
 	return result;
 }
 
-void object_set_position (object* obj, glm::vec3 position) {
-	transform_set_position (obj -> t, position);
-}
-
-void object_set_rotation (object* obj, glm::vec3 rotation) {
-	transform_set_rotation (obj -> t, rotation);
-}
-
 void object_render (object* obj) {
 	shader_use (obj -> m -> shader_id);
 	glBindVertexArray (obj -> m -> VAO);
 
-	shader_set_mat4 (obj -> m -> shader_id, "model", obj -> t -> model_matrix);
+	glm::mat4 model_matrix = transform_get_world_matrix (obj -> t);
+	shader_set_mat4 (obj -> m -> shader_id, "model", model_matrix);
 	model_render (obj -> m);
 
 	glBindVertexArray (0);

@@ -34,20 +34,32 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 		else {
 			int x_delta = in.mouse_x - in.last_mouse_x;
 
-			if (App -> rotation_axis == GP_X_AXIS) {
-				glm::vec3 rot = App -> selected_figure_part -> t -> rotation;
-				rot.x += x_delta * ROTATION_SPEED;
-				object_set_rotation (App -> selected_figure_part, rot);
+			if (App -> rotation_axis == GP_X_AXIS) {	
+				transform_rotate (App -> selected_figure_part -> t, App -> selected_figure_part -> t -> right, 
+								  x_delta * ROTATION_SPEED);
+
+				for (unsigned i = 0; i < GP_COUNT; ++i) {
+					transform_rotate (App -> rotation_gizmo[i] -> t, App -> selected_figure_part -> t -> right,
+									  x_delta * ROTATION_SPEED);
+				}
 			}
 			else if (App -> rotation_axis == GP_Y_AXIS) {
-				glm::vec3 rot = App -> selected_figure_part -> t -> rotation;
-				rot.y += x_delta * ROTATION_SPEED;
-				object_set_rotation (App -> selected_figure_part, rot);
+				transform_rotate (App -> selected_figure_part -> t, App -> selected_figure_part -> t -> up,
+								  x_delta * ROTATION_SPEED);
+
+				for (unsigned i = 0; i < GP_COUNT; ++i) {
+					transform_rotate (App -> rotation_gizmo[i] -> t, App -> selected_figure_part -> t -> up,
+									  x_delta * ROTATION_SPEED);
+				}
 			}
 			else if (App -> rotation_axis == GP_Z_AXIS) {
-				glm::vec3 rot = App -> selected_figure_part -> t -> rotation;
-				rot.z += x_delta * ROTATION_SPEED;
-				object_set_rotation (App -> selected_figure_part, rot);
+				transform_rotate (App -> selected_figure_part -> t, App -> selected_figure_part -> t -> forward,
+								  x_delta * ROTATION_SPEED);
+
+				for (unsigned i = 0; i < GP_COUNT; ++i) {
+					transform_rotate (App -> rotation_gizmo[i] -> t, App -> selected_figure_part -> t -> forward,
+									  x_delta * ROTATION_SPEED);
+				}
 			}
 		}
 	}
@@ -86,8 +98,13 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 			if (in.lmb_down) {
 				App -> selected_figure_part = App -> figure[index - 1];
 
-				for (unsigned i = 0; i < GP_COUNT; ++i)
-					object_set_position (App -> rotation_gizmo[i], transform_get_world_position (App -> selected_figure_part -> t));
+				glm::vec3 world_position = transform_get_world_position (App -> selected_figure_part -> t);
+
+				for (unsigned i = 0; i < GP_COUNT; ++i) {
+					transform_set_position (App -> rotation_gizmo[i] -> t, world_position);
+					transform_set_rotation (App -> rotation_gizmo[i] -> t, 
+						transform_get_world_rotation (App -> selected_figure_part -> t)); 
+				}
 			}
 		}
 		else {
@@ -210,21 +227,21 @@ static void setup_figure (app* App, unsigned shader) {
 	App -> figure[FP_R_FOOT] = object_new (r_foot_model);
 	transform_set_parent (App -> figure[FP_R_FOOT] -> t, App -> figure[FP_R_LOWER_LEG] -> t);
 
-	object_set_position (App -> figure[FP_PELVIS], glm::vec3 (0.0f, 0.0f, 0.0f));
-	object_set_position (App -> figure[FP_CHEST], glm::vec3 (0.0f, 0.5f, 0.0f));
-	object_set_position (App -> figure[FP_HEAD], glm::vec3 (0.0f, 0.9f, 0.0f));
-	object_set_position (App -> figure[FP_L_UPPER_ARM], glm::vec3 (0.32f, 0.69f, -0.05f));
-	object_set_position (App -> figure[FP_L_LOWER_ARM], glm::vec3 (0.625f, 0.012f, 0.0f));
-	object_set_position (App -> figure[FP_L_HAND], glm::vec3 (0.68f, -0.028f, 0.0f));
-	object_set_position (App -> figure[FP_R_UPPER_ARM], glm::vec3 (-0.32f, 0.69f, -0.05f));
-	object_set_position (App -> figure[FP_R_LOWER_ARM], glm::vec3 (-0.625f, 0.012f, 0.0f));
-	object_set_position (App -> figure[FP_R_HAND], glm::vec3 (-0.68f, -0.028f, 0.0f));
-	object_set_position (App -> figure[FP_L_UPPER_LEG], glm::vec3 (0.15f, -0.115f, -0.005f));
-	object_set_position (App -> figure[FP_L_LOWER_LEG], glm::vec3 (-0.02f, -1.01f, 0.0f));
-	object_set_position (App -> figure[FP_L_FOOT], glm::vec3 (0.0f, -1.05f, 0.0f));
-	object_set_position (App -> figure[FP_R_UPPER_LEG], glm::vec3 (-0.15f, -0.115f, -0.005f));
-	object_set_position (App -> figure[FP_R_LOWER_LEG], glm::vec3 (0.02f, -1.01f, 0.0f));
-	object_set_position (App -> figure[FP_R_FOOT], glm::vec3 (0.0f, -1.05f, 0.0f));
+	transform_set_position (App -> figure[FP_PELVIS] -> t, glm::vec3 (0.0f, 0.0f, 0.0f));
+	transform_set_position (App -> figure[FP_CHEST] -> t, glm::vec3 (0.0f, 0.5f, 0.0f));
+	transform_set_position (App -> figure[FP_HEAD] -> t, glm::vec3 (0.0f, 0.9f, 0.0f));
+	transform_set_position (App -> figure[FP_L_UPPER_ARM] -> t, glm::vec3 (0.32f, 0.69f, -0.05f));
+	transform_set_position (App -> figure[FP_L_LOWER_ARM] -> t, glm::vec3 (0.625f, 0.012f, 0.0f));
+	transform_set_position (App -> figure[FP_L_HAND] -> t, glm::vec3 (0.68f, -0.028f, 0.0f));
+	transform_set_position (App -> figure[FP_R_UPPER_ARM] -> t, glm::vec3 (-0.32f, 0.69f, -0.05f));
+	transform_set_position (App -> figure[FP_R_LOWER_ARM] -> t, glm::vec3 (-0.625f, 0.012f, 0.0f));
+	transform_set_position (App -> figure[FP_R_HAND] -> t, glm::vec3 (-0.68f, -0.028f, 0.0f));
+	transform_set_position (App -> figure[FP_L_UPPER_LEG] -> t, glm::vec3 (0.15f, -0.115f, -0.005f));
+	transform_set_position (App -> figure[FP_L_LOWER_LEG] -> t, glm::vec3 (-0.02f, -1.01f, 0.0f));
+	transform_set_position (App -> figure[FP_L_FOOT] -> t, glm::vec3 (0.0f, -1.05f, 0.0f));
+	transform_set_position (App -> figure[FP_R_UPPER_LEG] -> t, glm::vec3 (-0.15f, -0.115f, -0.005f));
+	transform_set_position (App -> figure[FP_R_LOWER_LEG] -> t, glm::vec3 (0.02f, -1.01f, 0.0f));
+	transform_set_position (App -> figure[FP_R_FOOT] -> t, glm::vec3 (0.0f, -1.05f, 0.0f));
 }
 
 static void render_gizmo (app* App, glm::mat4 view_matrix) {

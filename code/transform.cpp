@@ -1,85 +1,15 @@
 #include "transform.h"
 
 #include "glm/gtc/matrix_transform.hpp"
-
-// Children array
-static bool children_array_child_exists (transform_children* array, transform* child) {
-	for (unsigned i = 0; i < array -> count; ++i) {
-		if (array -> data[i] == child)
-			return true;
-	}
-
-	return false;
-}
-
-static transform_children children_array_new () {
-	transform_children result = { };
-	result.capacity = 2;
-	result.data = (transform**)malloc (sizeof (transform*) * result.capacity);
-
-	return result;
-}
-
-static void children_array_add (transform_children* array, transform* child) {
-	if (array -> count == array -> capacity) {
-		array -> capacity *= 2;
-		array -> data = (transform**)realloc (array -> data, sizeof (transform*) * array -> capacity);
-	}
-
-	if (!children_array_child_exists (array, child))
-		array -> data[array -> count++] = child;
-}
-
-static void children_array_free (transform_children* array) {
-	free (array -> data);
-}
-
-// Children stack
-static transform* children_array_pop (transform_children* array) {
-	--array -> count;
-	return array -> data[array -> count];
-}
+#include "glm/gtx/quaternion.hpp"
 
 static glm::mat4 generate_model_matrix (transform* t) {
 	glm::mat4 result = glm::mat4 (1.0f);
-	result = glm::translate (result, t -> world_position);
-	result = glm::rotate (result, glm::radians (t -> rotation.x), glm::vec3 (1.0f, 0.0f, 0.0f));
-	result = glm::rotate (result, glm::radians (t -> rotation.y), glm::vec3 (0.0f, 1.0f, 0.0f));
-	result = glm::rotate (result, glm::radians (t -> rotation.z), glm::vec3 (0.0f, 0.0f, 1.0f));
+	result = glm::translate (result, t -> position);
+	result = result * glm::toMat4 (t -> rotation);
 	result = glm::scale (result, t -> scale);
 
 	return result;
-}
-
-static void update_child (transform* child) {
-	child -> world_position = child -> position;
-
-	child -> model_matrix = generate_model_matrix (child);
-	child -> model_matrix = child -> parent -> model_matrix * child -> model_matrix;
-
-	child -> right = glm::vec3 (child -> model_matrix[0][0], child -> model_matrix[1][0], child -> model_matrix [2][0]);
-	child -> up = glm::vec3 (child -> model_matrix[0][1], child -> model_matrix[1][1], child -> model_matrix [2][1]);
-	child -> forward = glm::vec3 (child -> model_matrix[0][2], child -> model_matrix[1][2], child -> model_matrix [2][2]);
-
-	for (unsigned i = 0; i < child -> children.count; ++i)
-		update_child (child -> children.data[i]);
-}
-
-static void update_children (transform* t) {
-	t -> world_position = t -> position;
-	t -> world_rotation = t -> rotation;
-
-	t -> model_matrix = generate_model_matrix (t);
-
-	if (t -> parent)
-		t -> model_matrix = t -> parent -> model_matrix * t -> model_matrix;
-
-	t -> right = glm::vec3 (t -> model_matrix[0][0], t -> model_matrix[1][0], t -> model_matrix [2][0]);
-	t -> up = glm::vec3 (t -> model_matrix[0][1], t -> model_matrix[1][1], t -> model_matrix [2][1]);
-	t -> forward = glm::vec3 (t -> model_matrix[0][2], t -> model_matrix[1][2], t -> model_matrix [2][2]);
-
-	for (unsigned i = 0; i < t -> children.count; ++i)
-		update_child (t -> children.data[i]);
 }
 
 transform* transform_new () {
@@ -89,14 +19,10 @@ transform* transform_new () {
 transform* transform_new (glm::vec3 position, glm::vec3 rotation, glm::vec3 scale) {
 	transform* result = (transform*)malloc (sizeof (transform));
 	result -> position = position;
-	result -> rotation = rotation;
+	result -> rotation = glm::quat (rotation);
 	result -> scale = scale;
 
-	result -> world_position = position;
-	result -> world_rotation = rotation;
-
 	result -> parent = NULL;
-	result -> children = children_array_new ();
 
 	result -> model_matrix = generate_model_matrix (result);
 
@@ -109,30 +35,66 @@ transform* transform_new (glm::vec3 position, glm::vec3 rotation, glm::vec3 scal
 
 void transform_set_parent (transform* child, transform* parent) {
 	child -> parent = parent;	
-	children_array_add (&parent -> children, child);
-	update_children (child);
 }
 
 void transform_set_position (transform* t, glm::vec3 position) {
 	t -> position = position;
-	update_children (t);
+	t -> model_matrix = generate_model_matrix (t);
 }
 
-void transform_set_rotation (transform* t, glm::vec3 rotation) {
-	t -> rotation = rotation;
-	update_children (t);
+void transform_rotate (transform* t, glm::vec3 axis, float angle) {
+	t -> rotation = glm::rotate (t -> rotation, glm::radians (angle), axis);
+
+	t -> model_matrix = generate_model_matrix (t);
+
+	t -> right = glm::vec3 (t -> model_matrix[0][0], t -> model_matrix[1][0], t -> model_matrix[2][0]);
+	t -> up = glm::vec3 (t -> model_matrix[0][1], t -> model_matrix[1][1], t -> model_matrix[2][1]);
+	t -> forward = glm::vec3 (t -> model_matrix[0][2], t -> model_matrix[1][2], t -> model_matrix[2][2]);
 }
 
 void transform_set_scale (transform* t, glm::vec3 scale) {
 	t -> scale = scale;
-	update_children (t);
+	t -> model_matrix = generate_model_matrix (t);
+}
+
+void transform_set_rotation (transform* t, glm::quat rotation) {
+	t -> rotation = rotation;
+
+	t -> model_matrix = generate_model_matrix (t);
+
+	t -> right = glm::vec3 (t -> model_matrix[0][0], t -> model_matrix[1][0], t -> model_matrix[2][0]);
+	t -> up = glm::vec3 (t -> model_matrix[0][1], t -> model_matrix[1][1], t -> model_matrix[2][1]);
+	t -> forward = glm::vec3 (t -> model_matrix[0][2], t -> model_matrix[1][2], t -> model_matrix[2][2]);
+}
+
+glm::mat4 transform_get_world_matrix (transform* t) {
+	glm::mat4 result = t -> model_matrix;
+	transform* parent = t -> parent;
+	while (parent) {
+		result = parent -> model_matrix * result;
+		parent = parent -> parent;
+	}
+
+	return result;
 }
 
 glm::vec3 transform_get_world_position (transform* t) {
 	if (t -> parent) {
-		glm::vec4 pos = t -> parent -> model_matrix * glm::vec4 (t -> position, 1.0f);
+		glm::mat4 parent_matrix = transform_get_world_matrix (t -> parent);
+		glm::vec4 pos = parent_matrix * glm::vec4 (t -> position, 1.0f);
 		return glm::vec3 (pos.x, pos.y, pos.z);
 	}
 	
 	return t -> position;
+}
+
+glm::quat transform_get_world_rotation (transform* t) {
+	glm::quat result = t -> rotation;
+	transform* parent = t -> parent;
+	while (parent) {
+		result = parent -> rotation * result;
+		parent = parent -> parent;
+	}
+
+	return result;
 }
