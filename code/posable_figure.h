@@ -8,7 +8,7 @@ struct input;
 struct platform_api;
 
 enum figure_part { 
-	FP_PELVIS, 
+	FP_PELVIS,
 	FP_CHEST, 
 	FP_HEAD, 
 	FP_L_UPPER_ARM, FP_L_LOWER_ARM, FP_L_HAND,

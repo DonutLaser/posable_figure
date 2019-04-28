@@ -74,11 +74,11 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 			else if (in.z_down)
 				App -> rotation_axis = GP_Z_AXIS;
 		}
-		else if (index != 0 && index >= FP_COUNT) {
-			App -> rotation_gizmo[index - FP_COUNT] -> m -> multiply_color = glm::vec3 (SELECTION_MULTIPLIER_COLOR);
+		else if (index != 0 && index >= 100) {
+			App -> rotation_gizmo[index - 100] -> m -> multiply_color = glm::vec3 (SELECTION_MULTIPLIER_COLOR);
 
 			if (in.lmb_down)
-				App -> rotation_axis = (gizmo_part)(index - FP_COUNT);
+				App -> rotation_axis = (gizmo_part)(index - 100);
 		}
 		else {
 			for (unsigned i = 0; i < GP_COUNT; ++i)
@@ -97,7 +97,7 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 
 	// Do the figure part selection
 	if (App -> rotation_axis == GP_COUNT) {
-		if (index != 0) {
+		if (index != 0 && index <= FP_COUNT) {
 			if (App -> hover_figure_part && App -> hover_figure_part != App -> selected_figure_part)
 				App -> hover_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
 
@@ -285,7 +285,7 @@ static void render_gizmo (app* App, glm::mat4 view_matrix) {
 	shader_use (shader);
 	shader_set_mat4 (shader, "view", view_matrix);
 	for (unsigned i = 0; i < GP_COUNT; ++i) {
-		glStencilFunc (GL_ALWAYS, i + FP_COUNT, 0xFF);
+		glStencilFunc (GL_ALWAYS, i + 100, 0xFF);
 		object_render (App -> rotation_gizmo[i]);
 	}
 }
