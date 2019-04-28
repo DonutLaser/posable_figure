@@ -30,37 +30,33 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 
 	// Do the rotation
 	if (App -> rotation_axis != GP_COUNT) {
-		if (in.lmb_down)
-			App -> rotation_axis = GP_COUNT;
-		else {
-			int x_delta = in.mouse_x - in.last_mouse_x;
+		int x_delta = in.mouse_x - in.last_mouse_x;
 
-			if (App -> rotation_axis == GP_X_AXIS) {	
-				transform_rotate (App -> selected_figure_part -> t, App -> selected_figure_part -> t -> right, 
+		if (App -> rotation_axis == GP_X_AXIS) {	
+			transform_rotate (App -> selected_figure_part -> t, App -> selected_figure_part -> t -> right, 
+							  x_delta * ROTATION_SPEED);
+
+			for (unsigned i = 0; i < GP_COUNT; ++i) {
+				transform_rotate (App -> rotation_gizmo[i] -> t, App -> selected_figure_part -> t -> right,
 								  x_delta * ROTATION_SPEED);
-
-				for (unsigned i = 0; i < GP_COUNT; ++i) {
-					transform_rotate (App -> rotation_gizmo[i] -> t, App -> selected_figure_part -> t -> right,
-									  x_delta * ROTATION_SPEED);
-				}
 			}
-			else if (App -> rotation_axis == GP_Y_AXIS) {
-				transform_rotate (App -> selected_figure_part -> t, App -> selected_figure_part -> t -> up,
-								  x_delta * ROTATION_SPEED);
+		}
+		else if (App -> rotation_axis == GP_Y_AXIS) {
+			transform_rotate (App -> selected_figure_part -> t, App -> selected_figure_part -> t -> up,
+							  x_delta * ROTATION_SPEED);
 
-				for (unsigned i = 0; i < GP_COUNT; ++i) {
-					transform_rotate (App -> rotation_gizmo[i] -> t, App -> selected_figure_part -> t -> up,
-									  x_delta * ROTATION_SPEED);
-				}
+			for (unsigned i = 0; i < GP_COUNT; ++i) {
+				transform_rotate (App -> rotation_gizmo[i] -> t, App -> selected_figure_part -> t -> up,
+								  x_delta * ROTATION_SPEED);
 			}
-			else if (App -> rotation_axis == GP_Z_AXIS) {
-				transform_rotate (App -> selected_figure_part -> t, App -> selected_figure_part -> t -> forward,
-								  x_delta * ROTATION_SPEED);
+		}
+		else if (App -> rotation_axis == GP_Z_AXIS) {
+			transform_rotate (App -> selected_figure_part -> t, App -> selected_figure_part -> t -> forward,
+							  x_delta * ROTATION_SPEED);
 
-				for (unsigned i = 0; i < GP_COUNT; ++i) {
-					transform_rotate (App -> rotation_gizmo[i] -> t, App -> selected_figure_part -> t -> forward,
-									  x_delta * ROTATION_SPEED);
-				}
+			for (unsigned i = 0; i < GP_COUNT; ++i) {
+				transform_rotate (App -> rotation_gizmo[i] -> t, App -> selected_figure_part -> t -> forward,
+								  x_delta * ROTATION_SPEED);
 			}
 		}
 	}
@@ -70,7 +66,15 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 
 	// Do the rotation axis selection
 	if (App -> selected_figure_part) {
-		if (index != 0 && index >= FP_COUNT) {
+		if (in.x_down || in.y_down || in.z_down) {
+			if (in.x_down)
+				App -> rotation_axis = GP_X_AXIS;
+			else if (in.y_down)
+				App -> rotation_axis = GP_Y_AXIS;
+			else if (in.z_down)
+				App -> rotation_axis = GP_Z_AXIS;
+		}
+		else if (index != 0 && index >= FP_COUNT) {
 			App -> rotation_gizmo[index - FP_COUNT] -> m -> multiply_color = glm::vec3 (SELECTION_MULTIPLIER_COLOR);
 
 			if (in.lmb_down)
@@ -81,42 +85,49 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 				App -> rotation_gizmo[i] -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
 
 			if (index == 0 && in.lmb_down) {
-				App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
-				App -> selected_figure_part = NULL;
+				if (App -> rotation_axis == GP_COUNT) {
+					App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
+					App -> selected_figure_part = NULL;
+				}
+				else
+					App -> rotation_axis = GP_COUNT;
 			}
 		}
 	}
 
 	// Do the figure part selection
-	if (index != 0) {
-		if (App -> hover_figure_part && App -> hover_figure_part != App -> selected_figure_part)
-			App -> hover_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
+	if (App -> rotation_axis == GP_COUNT) {
+		if (index != 0) {
+			if (App -> hover_figure_part && App -> hover_figure_part != App -> selected_figure_part)
+				App -> hover_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
 
-		App -> hover_figure_part = App -> figure[index - 1];
-		App -> hover_figure_part -> m -> multiply_color = glm::vec3 (SELECTION_MULTIPLIER_COLOR);
+			App -> hover_figure_part = App -> figure[index - 1];
+			App -> hover_figure_part -> m -> multiply_color = glm::vec3 (SELECTION_MULTIPLIER_COLOR);
 
-		if (in.lmb_down) {
-			if (App -> selected_figure_part)
-				App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
+			if (in.lmb_down) {
+				if (App -> selected_figure_part)
+					App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
 
-			App -> selected_figure_part = App -> figure[index - 1];
-			App -> selected_figure_part -> m -> multiply_color = glm::vec3 (SELECTION_MULTIPLIER_COLOR);
+				App -> selected_figure_part = App -> figure[index - 1];
+				App -> selected_figure_part -> m -> multiply_color = glm::vec3 (SELECTION_MULTIPLIER_COLOR);
 
-			App -> hover_figure_part = NULL;
+				App -> hover_figure_part = NULL;
 
-			glm::vec3 world_position = transform_get_world_position (App -> selected_figure_part -> t);
+				glm::vec3 world_position = transform_get_world_position (App -> selected_figure_part -> t);
 
-			for (unsigned i = 0; i < GP_COUNT; ++i) {
-				transform_set_position (App -> rotation_gizmo[i] -> t, world_position);
-				transform_set_rotation (App -> rotation_gizmo[i] -> t, 
-					transform_get_world_rotation (App -> selected_figure_part -> t)); 
+				for (unsigned i = 0; i < GP_COUNT; ++i) {
+					transform_set_position (App -> rotation_gizmo[i] -> t, world_position);
+					transform_set_rotation (App -> rotation_gizmo[i] -> t, 
+						transform_get_world_rotation (App -> selected_figure_part -> t)); 
+				}
 			}
 		}
+		else {
+			if (App -> hover_figure_part && App -> hover_figure_part != App -> selected_figure_part)
+				App -> hover_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
+		}
 	}
-	else {
-		if (App -> hover_figure_part && App -> hover_figure_part != App -> selected_figure_part)
-			App -> hover_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
-	}
+	
 
 	if (in.rmb_pressed) {
 		int mouse_delta_x = in.last_mouse_x - in.mouse_x;

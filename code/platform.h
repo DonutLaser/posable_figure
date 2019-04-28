@@ -22,6 +22,10 @@ struct input {
 	bool num3_down;
 	bool num7_down;
 	bool num5_down;
+
+	bool x_down;
+	bool y_down;
+	bool z_down;
 };
 
 struct platform_api {
