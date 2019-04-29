@@ -52,8 +52,13 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 				App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
 				App -> selected_figure_part = NULL;
 			}
-			else
+			else {
 				App -> rotation_axis = GP_COUNT;
+				in.lmb_down = false;
+				
+				for (unsigned i = 0; i < GP_COUNT; ++i)
+					App -> rotation_gizmo[i] -> m -> visible = true;
+			}
 		}
 		else if (in.rmb_down) {
 			transform_set_rotation (App -> selected_figure_part -> t, App -> last_rotation);
@@ -118,6 +123,9 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 			if (in.lmb_down) {
 				App -> rotation_axis = (gizmo_part)(index - 100);
 				axis_selected = true;
+
+				for (unsigned i = 0; i < GP_COUNT; ++i)
+					App -> rotation_gizmo[i] -> m -> visible = false;
 			}
 		}
 		else {
