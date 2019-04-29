@@ -5,6 +5,7 @@
 #include "obj_loader.h"
 #include "platform.h"
 #include "shader.h"
+#include "ui.h"
 #include "constants.h"
 
 #include "gl_extensions.h"
@@ -21,6 +22,22 @@ static void update_projection (app* App, unsigned window_width, unsigned window_
 	shader_use (App -> rotation_gizmo[0] -> m -> shader_id);
 	for (unsigned i = 0; i < GP_COUNT; ++i)
 		shader_set_mat4 (App -> rotation_gizmo[i] -> m -> shader_id, "projection", App -> camera.cam.projection);
+
+	glm::mat4 ui_projection = glm::ortho (0.0f, (float)window_width, (float)window_height, 0.0f, -1.0f, 1.0f);
+	shader_use (App -> UI -> shader_id);
+	shader_set_mat4 (App -> UI -> shader_id, "projection", ui_projection);
+}
+
+static void reset_pose (app* App) {
+	App -> rotation_axis = GP_COUNT;
+
+	if (App -> selected_figure_part) {
+		App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
+		App -> selected_figure_part = NULL;
+	}
+
+	for (unsigned i = 0; i < FP_COUNT; ++i)
+		transform_set_rotation (App -> figure[i] -> t, glm::quat (glm::vec3 (0.0f, 0.0f, 0.0f)));
 }
 
 static void handle_input (app* App, platform_api api, input in, float dt) {
@@ -53,7 +70,7 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 		else {
 			if (App -> rotation_axis == GP_X_AXIS) {	
 				transform_rotate (App -> selected_figure_part -> t, App -> selected_figure_part -> t -> right, 
-								  x_delta * ROTATION_SPEED);
+								 x_delta * ROTATION_SPEED);
 
 				for (unsigned i = 0; i < GP_COUNT; ++i) {
 					transform_rotate (App -> rotation_gizmo[i] -> t, App -> selected_figure_part -> t -> right,
@@ -191,23 +208,6 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 		if (App -> camera.cam.orthographic)
 			update_projection (App, window_width, window_height);
 	}
-
-	if (in.f3_down) {
-		App -> rotation_axis = GP_COUNT;
-
-		if (App -> hover_figure_part) {
-			App -> hover_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
-			App -> hover_figure_part = NULL;
-		}
-
-		if (App -> selected_figure_part) {
-			App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
-			App -> selected_figure_part = NULL;
-		}
-
-		for (unsigned i = 0; i < FP_COUNT; ++i)
-			transform_set_rotation (App -> figure[i] -> t, glm::quat (glm::vec3 (0.0f, 0.0f, 0.0f)));
-	}
 }
 
 static unsigned load_shader (platform_api api, const char* vert_path, const char* frag_path) {
@@ -330,9 +330,11 @@ void app_init (void* memory, platform_api api) {
 
 	unsigned default_shader = load_shader (api, DEFAULT_VERT_SOURCE, DEFAULT_FRAG_SOURCE);
 	unsigned unlit_shader = load_shader (api, UNLIT_VERT_SOURCE, UNLIT_FRAG_SOURCE);
+	unsigned ui_shader = load_shader (api, UI_VERT_SOURCE, UI_FRAG_SOURCE);
 
 	setup_figure (App, default_shader);
 	setup_gizmo (App, unlit_shader);
+	App -> UI = ui_new (ui_shader);
 
 	App -> camera = arc_ball_new (glm::vec3 (0.0f, 0.0f, 0.0f));
 	App -> camera.cam.orthographic = false;
@@ -342,6 +344,10 @@ void app_init (void* memory, platform_api api) {
 	unsigned window_width, window_height;
 	api.get_window_size (&window_width, &window_height);
 	update_projection (App, window_width, window_height);
+
+	glm::vec2 button_size = glm::vec2 (RESET_BUTTON_SIZE);
+	glm::vec2 button_position = glm::vec2 (window_width - 10 - button_size.x, window_height - 10 - button_size.y);
+	App -> button = ui_button_new (button_position, button_size);
 
 	shader_use (App -> figure[0] -> m -> shader_id);
 	shader_set_vec3 (App -> figure[0] -> m -> shader_id, "light_direction", glm::vec3 (-1.0f, -1.0f, 0.0f));
@@ -360,17 +366,25 @@ void app_init (void* memory, platform_api api) {
 void app_update_and_render (void* memory, platform_api api, input in, float dt) {
 	app* App = (app*)memory;
 
-	if (api.was_window_resized ()) {
-		unsigned window_width, window_height;
-		api.get_window_size (&window_width, &window_height);
+	unsigned window_width, window_height;
+	api.get_window_size (&window_width, &window_height);
+
+	if (api.was_window_resized ())
 		update_projection (App, window_width, window_height);
-	}
 
 	handle_input (App, api, in, dt);
 
 	glClearColor (BG_COLOR);
 	glClearStencil (0);
 	glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+
+	glDisable (GL_DEPTH_TEST);
+	glDisable (GL_STENCIL_TEST);
+	if (ui_do_button (App -> UI, App -> button, in, glm::vec3 (RESET_BUTTON_COLOR), glm::vec3 (RESET_BUTTON_COLOR_HOVER), glm::vec3 (RESET_BUTTON_COLOR_CLICK)))
+		reset_pose (App);
+
+	glEnable (GL_DEPTH_TEST);
+	glEnable (GL_STENCIL_TEST);
 
 	glm::mat4 view = camera_get_view_matrix (&App -> camera.cam);
 
@@ -388,4 +402,12 @@ void app_close (void* memory) {
 		object_free (App -> figure[i]);
 		free (App -> figure[i]);
 	}
+
+	for (unsigned i = 0; i < GP_COUNT; ++i) {
+		object_free (App -> rotation_gizmo[i]);
+		free (App -> rotation_gizmo[i]);
+	}
+
+	free (App -> UI);
+	free (App -> button);
 }

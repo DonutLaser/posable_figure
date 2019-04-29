@@ -11,6 +11,8 @@
 #define DEFAULT_FRAG_SOURCE		"W:/posable_figure/data/shaders/default.frag"
 #define UNLIT_VERT_SOURCE		"W:/posable_figure/data/shaders/unlit.vert"
 #define UNLIT_FRAG_SOURCE		"W:/posable_figure/data/shaders/unlit.frag"
+#define UI_VERT_SOURCE 			"W:/posable_figure/data/shaders/ui.vert"
+#define UI_FRAG_SOURCE 			"W:/posable_figure/data/shaders/ui.frag"
 
 #define HEAD					"W:/posable_figure/data/models/head.obj"
 #define CHEST					"W:/posable_figure/data/models/chest.obj"
@@ -40,5 +42,10 @@
 #define TOP_VIEW_PITCH 90.0f
 
 #define ROTATION_SPEED 0.2f
+
+#define RESET_BUTTON_SIZE 128.0f, 32.0f
+#define RESET_BUTTON_COLOR 0.439f, 0.427f, 0.419f
+#define RESET_BUTTON_COLOR_HOVER 0.439f, 0.427f, 0.619f
+#define RESET_BUTTON_COLOR_CLICK 1.0f, 0.427f, 1.0f
 
 #endif

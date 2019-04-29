@@ -7,6 +7,8 @@
 
 struct input;
 struct platform_api;
+struct ui;
+struct ui_button;
 
 enum figure_part { 
 	FP_PELVIS,
@@ -30,6 +32,9 @@ struct app {
 	object* figure[FP_COUNT];
 	object* rotation_gizmo[GP_COUNT];
 	arc_ball camera;
+
+	ui* UI;
+	ui_button* button;
 
 	gizmo_part rotation_axis;
 	object* selected_figure_part;
