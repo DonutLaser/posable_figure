@@ -407,8 +407,11 @@ void app_update_and_render (void* memory, platform_api api, input in, float dt) 
 	unsigned window_width, window_height;
 	api.get_window_size (&window_width, &window_height);
 
-	if (api.was_window_resized ())
+	if (api.was_window_resized ()) {
 		update_projection (App, window_width, window_height);
+		App -> button -> position = glm::vec2 (window_width - 10 - App -> button -> size.x,
+											   window_height - 10 - App -> button -> size.y);
+	}
 
 	handle_input (App, api, in, dt);
 
