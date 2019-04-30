@@ -29,6 +29,7 @@ ui* ui_new (unsigned shader_id);
 ui_button* ui_button_new (glm::vec2 position, glm::vec2 size);
 
 void ui_render_rect (ui* UI, glm::vec2 position, glm::vec2 size, glm::vec3 color);
+void ui_render_texture (ui* UI, glm::vec2 position, texture* tex);
 bool ui_do_button (ui* UI, ui_button* b, input in, glm::vec3 default_color, glm::vec3 hover_color, glm::vec3 click_color);
 
 #endif

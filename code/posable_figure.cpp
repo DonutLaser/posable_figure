@@ -378,6 +378,8 @@ void app_init (void* memory, platform_api api) {
 	glEnable (GL_STENCIL_TEST);
 	glStencilOp (GL_KEEP, GL_KEEP, GL_REPLACE);
 	glStencilMask (0xFF);
+	glEnable (GL_BLEND);
+	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
 
 	App -> rotation_axis = GP_COUNT;
 	App -> selected_figure_part = NULL;
@@ -418,6 +420,8 @@ void app_update_and_render (void* memory, platform_api api, input in, float dt) 
 	glDisable (GL_STENCIL_TEST);
 	if (ui_do_button (App -> UI, App -> button, in, glm::vec3 (RESET_BUTTON_COLOR), glm::vec3 (RESET_BUTTON_COLOR_HOVER), glm::vec3 (RESET_BUTTON_COLOR_CLICK)))
 		reset_pose (App);
+
+	ui_render_texture (App -> UI, glm::vec2 (10.0f, 10.0f), App -> camera.cam.orthographic ? App -> textures[TT_ORTHO] : App -> textures[TT_PERSP]);
 
 	glEnable (GL_DEPTH_TEST);
 	glEnable (GL_STENCIL_TEST);
