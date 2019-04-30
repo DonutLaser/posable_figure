@@ -38,6 +38,7 @@ void gl_extensions_init () {
 	glUniform1f = (PFNGLUNIFORM1FPROC)load_method ("glUniform1f");
 	glUniform3f = (PFNGLUNIFORM3FPROC)load_method ("glUniform3f");
 	glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)load_method ("glUniformMatrix4fv");
+	glActiveTexture = (PFNGLACTIVETEXTUREPROC)load_method ("glActiveTexture");
 }
 
 PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
@@ -66,3 +67,4 @@ PFNGLGETUNIFORMLOCATIONPROC glGetUniformLocation;
 PFNGLUNIFORM1FPROC glUniform1f;
 PFNGLUNIFORM3FPROC glUniform3f;
 PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
+PFNGLACTIVETEXTUREPROC glActiveTexture;

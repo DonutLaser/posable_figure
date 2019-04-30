@@ -6,8 +6,10 @@
 enum ui_state { UI_DEFAULT, UI_HOVER, UI_CLICK };
 
 struct input;
+struct texture;
 
 struct ui {
+	texture* default_texture;
 	glm::mat4 projection;
 	unsigned VAO;
 	unsigned VBO;
@@ -17,6 +19,7 @@ struct ui {
 };
 
 struct ui_button {
+	texture* tex;
 	glm::vec2 position;
 	glm::vec2 size;
 	ui_state state;

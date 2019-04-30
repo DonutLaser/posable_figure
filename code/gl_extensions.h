@@ -107,5 +107,8 @@ typedef void (APIENTRYP PFNGLUNIFORM3FPROC) (GLint location, GLfloat v0, GLfloat
 extern PFNGLUNIFORM3FPROC glUniform3f;
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 extern PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
+typedef void (APIENTRYP PFNGLACTIVETEXTUREPROC) (GLenum texture);
+extern PFNGLACTIVETEXTUREPROC glActiveTexture;
+#define GL_TEXTURE0                       0x84C0
 
 #endif

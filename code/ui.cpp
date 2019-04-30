@@ -6,6 +6,7 @@
 
 #include "glm/glm.hpp"
 #include "platform.h"
+#include "texture.h"
 
 static bool is_point_in_rect (glm::vec4 rect, glm::vec2 point) {
 	return point.x >= rect.x && point.x <= rect.x + rect.z &&
@@ -18,13 +19,13 @@ ui* ui_new (unsigned shader_id) {
 	result -> shader_id = shader_id;
 
 	float vertices[] = {
-		0.0f, 1.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
-		0.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 1.0f,
+		1.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.0f, 0.0f, 0.0f,
 
-		0.0f, 1.0f, 0.0f,
-		1.0f, 1.0f, 0.0f,
-		1.0f, 0.0f, 0.0f,
+		0.0f, 1.0f, 0.0f, 1.0f,
+		1.0f, 1.0f, 1.0f, 1.0f,
+		1.0f, 0.0f, 1.0f, 0.0f
 	};
 
 	glGenVertexArrays (1, &result -> VAO);
@@ -33,10 +34,12 @@ ui* ui_new (unsigned shader_id) {
 	glBindVertexArray (result -> VAO);
 
 	glBindBuffer (GL_ARRAY_BUFFER, result -> VBO);
-	glBufferData (GL_ARRAY_BUFFER, sizeof (float) * result -> vertex_count * 3, &vertices, GL_STATIC_DRAW);
+	glBufferData (GL_ARRAY_BUFFER, sizeof (float) * result -> vertex_count * 4, &vertices, GL_STATIC_DRAW);
 
-	glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof (float), (void*)0);
+	glVertexAttribPointer (0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof (float), (void*)0);
 	glEnableVertexAttribArray (0);
+	glVertexAttribPointer (1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof (float), (void*)(2 * sizeof (float)));
+	glEnableVertexAttribArray (1);
 
 	glBindVertexArray (0);
 
@@ -60,6 +63,27 @@ void ui_render_rect (ui* UI, glm::vec2 position, glm::vec2 size, glm::vec3 color
 
 	shader_set_mat4 (UI -> shader_id, "model", model_matrix);
 	shader_set_vec3 (UI -> shader_id, "diffuse_color", color);
+
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, UI -> default_texture -> id);
+
+	glBindVertexArray (UI -> VAO);
+	glDrawArrays (GL_TRIANGLES, 0, UI -> vertex_count);
+	glBindVertexArray (0);
+}
+
+void ui_render_texture (ui* UI, glm::vec2 position, texture* tex) {
+	shader_use (UI -> shader_id);
+
+	glm::mat4 model_matrix = glm::mat4 (1.0f);
+	model_matrix = glm::translate (model_matrix, glm::vec3 (position, 0.0f));
+	model_matrix = glm::scale (model_matrix, glm::vec3 (tex -> size, 1.0f));
+
+	shader_set_mat4 (UI -> shader_id, "model", model_matrix);
+	shader_set_vec3 (UI -> shader_id, "diffuse_color", glm::vec3 (1.0f, 1.0f, 1.0f));
+
+	glActiveTexture (GL_TEXTURE0);
+	glBindTexture (GL_TEXTURE_2D, tex -> id);
 
 	glBindVertexArray (UI -> VAO);
 	glDrawArrays (GL_TRIANGLES, 0, UI -> vertex_count);
@@ -95,6 +119,7 @@ bool ui_do_button (ui* UI, ui_button* b, input in, glm::vec3 default_color, glm:
  	}
 
  	ui_render_rect (UI, b -> position, b -> size, final_color);
+ 	ui_render_texture (UI, b -> position, b -> tex);
 
 	return result;
 }

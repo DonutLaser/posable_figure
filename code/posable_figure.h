@@ -9,6 +9,7 @@ struct input;
 struct platform_api;
 struct ui;
 struct ui_button;
+struct texture;
 
 enum figure_part { 
 	FP_PELVIS,
@@ -28,6 +29,8 @@ enum gizmo_part {
 	GP_COUNT
 };
 
+enum texture_type { TT_RESET, TT_ORTHO, TT_PERSP, TT_DEFAULT, TT_COUNT };
+
 struct app {
 	object* figure[FP_COUNT];
 	object* rotation_gizmo[GP_COUNT];
@@ -35,6 +38,8 @@ struct app {
 
 	ui* UI;
 	ui_button* button;
+
+	texture* textures[TT_COUNT];
 
 	gizmo_part rotation_axis;
 	object* selected_figure_part;

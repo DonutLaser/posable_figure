@@ -7,6 +7,10 @@
 #include "shader.h"
 #include "ui.h"
 #include "constants.h"
+#include "texture.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 #include "gl_extensions.h"
 #include <gl/gl.h>
@@ -55,7 +59,7 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 			else {
 				App -> rotation_axis = GP_COUNT;
 				in.lmb_down = false;
-				
+
 				for (unsigned i = 0; i < GP_COUNT; ++i)
 					App -> rotation_gizmo[i] -> m -> visible = true;
 			}
@@ -232,6 +236,16 @@ static unsigned load_shader (platform_api api, const char* vert_path, const char
 	return result;
 }
 
+static unsigned char* load_texture (const char* path, unsigned* width, unsigned* height) {
+	int channels = 0, result_width, result_height;
+	unsigned char* result = stbi_load (path, &result_width, &result_height, &channels, 0);
+
+	*width = (unsigned)result_width;
+	*height = (unsigned)result_height;
+
+	return result;
+}
+
 static void setup_gizmo (app* App, unsigned shader) {
 	model* x_axis = model_new (obj_load (GIZMO_X), shader);
 	model* y_axis = model_new (obj_load (GIZMO_Y), shader);
@@ -369,6 +383,20 @@ void app_init (void* memory, platform_api api) {
 	App -> selected_figure_part = NULL;
 	App -> hover_figure_part = NULL;
 	App -> last_rotation = glm::quat (glm::vec3 (0.0f, 0.0f, 0.0f));
+
+	const char* paths[TT_COUNT] = {
+		RESET_IMAGE, ORTHO_IMAGE, PERSP_IMAGE,
+		DEFAULT_IMAGE
+	};
+
+	for (unsigned i = 0; i < TT_COUNT; ++i) {
+		unsigned width, height;
+		unsigned char* data = load_texture (paths[i], &width, &height);
+		App -> textures[i] = texture_new (width, height, data);
+	}
+
+	App -> button -> tex = App -> textures[TT_RESET];
+	App -> UI -> default_texture = App -> textures[TT_DEFAULT];
 }
 
 void app_update_and_render (void* memory, platform_api api, input in, float dt) {

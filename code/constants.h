@@ -34,6 +34,11 @@
 #define GIZMO_Y					"../data/models/gizmo_y.obj"
 #define GIZMO_Z					"../data/models/gizmo_z.obj"
 
+#define RESET_IMAGE				"../data/images/reset.png"
+#define ORTHO_IMAGE				"../data/images/orthographic.png"
+#define PERSP_IMAGE				"../data/images/perspective.png"
+#define DEFAULT_IMAGE			"../data/images/default.png"
+
 #define FRONT_VIEW_YAW 0.0f
 #define FRONT_VIEW_PITCH 0.0f
 #define RIGHT_VIEW_YAW 90.0f;
@@ -44,8 +49,8 @@
 #define ROTATION_SPEED 0.2f
 
 #define RESET_BUTTON_SIZE 128.0f, 32.0f
-#define RESET_BUTTON_COLOR 0.439f, 0.427f, 0.419f
-#define RESET_BUTTON_COLOR_HOVER 0.439f, 0.427f, 0.619f
-#define RESET_BUTTON_COLOR_CLICK 1.0f, 0.427f, 1.0f
+#define RESET_BUTTON_COLOR 1.0f, 1.0f, 1.0f
+#define RESET_BUTTON_COLOR_HOVER 0.847f, 0.847f, 0.847f
+#define RESET_BUTTON_COLOR_CLICK 0.737f, 0.737f, 0.737f
 
 #endif
