@@ -380,7 +380,9 @@ void app_init (void* memory, platform_api api) {
 	glStencilMask (0xFF);
 	glEnable (GL_BLEND);
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
-
+	glDisable (GL_MULTISAMPLE_ARB);
+	glEnable (GL_MULTISAMPLE_ARB);
+	
 	App -> rotation_axis = GP_COUNT;
 	App -> selected_figure_part = NULL;
 	App -> hover_figure_part = NULL;

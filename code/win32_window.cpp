@@ -20,29 +20,11 @@ static POINT wnd_get_client_size (win32_window* window) {
 }
 
 static bool initialize_opengl (HWND window) {
+	// Call after creating a dummy context and destroying dummy window
+
 	HDC dc = GetDC (window);
-	PIXELFORMATDESCRIPTOR format = { };
-	format.nSize = sizeof (format);
-	format.nVersion = 1;
-	format.iPixelType = PFD_TYPE_RGBA;
-	format.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER;
-	format.cColorBits = 32;
-	format.cAlphaBits = 8;
-	format.cStencilBits = 8;
-	format.iLayerType = PFD_MAIN_PLANE;
 
-	int format_id = ChoosePixelFormat (dc, &format);
-	PIXELFORMATDESCRIPTOR actual_format;
-	DescribePixelFormat (dc, format_id, sizeof (actual_format), &actual_format);
-	SetPixelFormat (dc, format_id, &actual_format);
-
-	HGLRC gl_context = wglCreateContext (dc);
-	if (!wglMakeCurrent (dc, gl_context))
-		return false;
-	
-	gl_extensions_init();
-
-	const int attrib_list[] = {
+	int attrib_list[] = {
 		WGL_DRAW_TO_WINDOW_ARB, GL_TRUE,
 		WGL_SUPPORT_OPENGL_ARB, GL_TRUE,
 		WGL_DOUBLE_BUFFER_ARB, GL_TRUE,
@@ -50,27 +32,34 @@ static bool initialize_opengl (HWND window) {
 		WGL_COLOR_BITS_ARB, 32,
 		WGL_DEPTH_BITS_ARB, 24,
 		WGL_STENCIL_BITS_ARB, 8,
+		WGL_SAMPLE_BUFFERS_ARB, 1,
+		WGL_SAMPLES_ARB, 4,
 		0
 	};
 
-	unsigned format_count;
-	wglChoosePixelFormatARB (dc, attrib_list, NULL, 1, &format_id, &format_count);
-	DescribePixelFormat (dc, format_id, sizeof (actual_format), &actual_format);
-	SetPixelFormat (dc, format_id, &actual_format);
+	int format_id = 0;
+	unsigned format_count = 0;
+	PIXELFORMATDESCRIPTOR actual_format;
+	bool valid = wglChoosePixelFormatARB (dc, attrib_list, NULL, 1, &format_id, &format_count);
+	if (valid){ 
+		DescribePixelFormat (dc, format_id, sizeof (actual_format), &actual_format);
+		SetPixelFormat (dc, format_id, &actual_format);
 
-	const int ctx_attrib_list[] = {
-		WGL_CONTEXT_MAJOR_VERSION_ARB, 1,
-		WGL_CONTEXT_MINOR_VERSION_ARB, 0,	
-		WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
-		0
-	};
+		const int ctx_attrib_list[] = {
+			WGL_CONTEXT_MAJOR_VERSION_ARB, 4,
+			WGL_CONTEXT_MINOR_VERSION_ARB, 6,	
+			WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
+			0
+		};
 
-	gl_context = wglCreateContextAttribsARB (dc, NULL, ctx_attrib_list);
-	if (!wglMakeCurrent (dc, gl_context))
+		HGLRC gl_context = wglCreateContextAttribsARB (dc, NULL, ctx_attrib_list);
+		if (!wglMakeCurrent (dc, gl_context))
+			return false;
+	}
+	else
 		return false;
 
-	ReleaseDC (window, dc);
-
+	ReleaseDC(window, dc);
 
 	return true;
 }
@@ -113,7 +102,52 @@ static LRESULT CALLBACK window_proc (HWND window, UINT msg, WPARAM w_param, LPAR
 	return DefWindowProc (window, msg, w_param, l_param);
 }	
 
+static void create_dummy_window_and_context () {
+	WNDCLASS dummy_class = { };
+	dummy_class.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
+	dummy_class.lpfnWndProc = window_proc;
+	dummy_class.hInstance = GetModuleHandle (0);
+	dummy_class.lpszClassName = "dummy_window";
+
+	if (RegisterClass (&dummy_class)) {
+		HWND handle = CreateWindow ("dummy_window", "dummy_window",
+									WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME | WS_MINIMIZEBOX | WS_MAXIMIZEBOX,
+									CW_USEDEFAULT, CW_USEDEFAULT,
+									10, 10,
+									0, 0, dummy_class.hInstance, 0);
+
+		if (handle) {
+			HDC dc = GetDC (handle);
+
+			PIXELFORMATDESCRIPTOR format = { };
+			format.nSize = sizeof (format);
+			format.nVersion = 1;
+			format.iPixelType = PFD_TYPE_RGBA;
+			format.dwFlags = PFD_SUPPORT_OPENGL | PFD_DRAW_TO_WINDOW | PFD_DOUBLEBUFFER;
+			format.cColorBits = 32;
+			format.cAlphaBits = 8;
+			format.cStencilBits = 8;
+			format.iLayerType = PFD_MAIN_PLANE;
+
+			int format_id = ChoosePixelFormat (dc, &format);
+			PIXELFORMATDESCRIPTOR actual_format;
+			DescribePixelFormat (dc, format_id, sizeof (actual_format), &actual_format);
+			SetPixelFormat (dc, format_id, &actual_format);
+
+			HGLRC gl_context = wglCreateContext (dc);
+			if (!wglMakeCurrent (dc, gl_context))
+				; // Error
+			
+			gl_extensions_init();
+
+			DestroyWindow (handle);
+		}
+	}
+}
+
 win32_window* window_new (const char* title, unsigned width, unsigned height) {
+	create_dummy_window_and_context (); // For the sole purpose of loading gl extensions properly
+
 	win32_window* result = (win32_window*)malloc (sizeof (win32_window));
 
 	result -> instance = GetModuleHandle (0);

@@ -45,6 +45,8 @@ void gl_extensions_init ();
 #define WGL_COLOR_BITS_ARB                0x2014
 #define WGL_DEPTH_BITS_ARB                0x2022
 #define WGL_STENCIL_BITS_ARB              0x2023
+#define WGL_SAMPLE_BUFFERS_ARB            0x2041
+#define WGL_SAMPLES_ARB                   0x2042
 typedef BOOL (WINAPI * PFNWGLCHOOSEPIXELFORMATARBPROC) (HDC hdc, const int *piAttribIList, const FLOAT *pfAttribFList, UINT nMaxFormats, int *piFormats, UINT *nNumFormats);
 extern PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
 #define WGL_CONTEXT_MAJOR_VERSION_ARB     0x2091
@@ -53,6 +55,7 @@ extern PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
 #define WGL_CONTEXT_CORE_PROFILE_BIT_ARB  0x00000001
 typedef HGLRC (WINAPI * PFNWGLCREATECONTEXTATTRIBSARBPROC) (HDC hDC, HGLRC hShareContext, const int *attribList);
 extern PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
+#define GL_SAMPLE_BUFFERS_ARB             0x80A8
 typedef void (APIENTRYP PFNGLGENVERTEXARRAYSPROC) (GLsizei n, GLuint *arrays);
 extern PFNGLGENVERTEXARRAYSPROC glGenVertexArrays;
 typedef void (APIENTRYP PFNGLGENBUFFERSPROC) (GLsizei n, GLuint *buffers);
@@ -110,5 +113,6 @@ extern PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv;
 typedef void (APIENTRYP PFNGLACTIVETEXTUREPROC) (GLenum texture);
 extern PFNGLACTIVETEXTUREPROC glActiveTexture;
 #define GL_TEXTURE0                       0x84C0
+#define GL_MULTISAMPLE_ARB                0x809D
 
 #endif

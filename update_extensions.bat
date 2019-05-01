@@ -1,1 +1,1 @@
-GLLoader W:\posable_figure\code\win32_window.cpp W:\posable_figure\code\model.cpp W:\posable_figure\code\shader.cpp W:\posable_figure\code\texture.cpp W:\posable_figure\code\ui.cpp W:\posable_figure\code gl_extensions
+GLLoader W:\posable_figure\code\win32_window.cpp W:\posable_figure\code\model.cpp W:\posable_figure\code\shader.cpp W:\posable_figure\code\texture.cpp W:\posable_figure\code\ui.cpp W:\posable_figure\code\posable_figure.cpp W:\posable_figure\code gl_extensions
