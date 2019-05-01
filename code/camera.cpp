@@ -37,8 +37,10 @@ glm::mat4 camera_get_view_matrix (camera* cam) {
 }
 
 void camera_recalculate_projection (camera* cam, float window_width, float window_height, float orthographic_zoom_factor) {
-	if (!cam -> orthographic)
-		cam -> projection = glm::perspective (glm::radians (cam -> zoom), window_width / window_height, cam -> near_plane, cam -> far_plane);
+	if (!cam -> orthographic) {
+		if (window_width != 0 && window_height != 0)
+			cam -> projection = glm::perspective (glm::radians (cam -> zoom), window_width / window_height, cam -> near_plane, cam -> far_plane);
+	}
 	else {
 		float half_width = window_width / 100 / 2;
 		float half_height = window_height / 100 / 2;
