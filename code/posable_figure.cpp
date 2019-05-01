@@ -129,6 +129,8 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 				App -> rotation_axis = (gizmo_part)(index - 100);
 				axis_selected = true;
 
+				App -> last_rotation = App -> selected_figure_part -> t -> rotation;
+
 				for (unsigned i = 0; i < GP_COUNT; ++i)
 					App -> rotation_gizmo[i] -> m -> visible = false;
 			}
@@ -168,7 +170,6 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 
 				glm::vec3 world_position = transform_get_world_position (App -> selected_figure_part -> t);
 				glm::quat world_rotation = transform_get_world_rotation (App -> selected_figure_part -> t);
-				App -> last_rotation = App -> selected_figure_part -> t -> rotation;
 
 				for (unsigned i = 0; i < GP_COUNT; ++i) {
 					transform_set_position (App -> rotation_gizmo[i] -> t, world_position);
