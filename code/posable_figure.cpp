@@ -74,6 +74,7 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 			for (unsigned i = 0; i < GP_COUNT; ++i) {
 				transform_set_position (App -> rotation_gizmo[i] -> t, world_position);
 				transform_set_rotation (App -> rotation_gizmo[i] -> t, world_rotation);
+				App -> rotation_gizmo[i] -> m -> visible = true;
 			}
 		}
 		else {
