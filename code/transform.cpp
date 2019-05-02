@@ -43,13 +43,9 @@ void transform_set_position (transform* t, glm::vec3 position) {
 }
 
 void transform_rotate (transform* t, glm::vec3 axis, float angle) {
-	t -> rotation = glm::rotate (t -> rotation, glm::radians (angle), axis);
-
-	t -> model_matrix = generate_model_matrix (t);
-
-	t -> right = glm::vec3 (t -> model_matrix[0][0], t -> model_matrix[1][0], t -> model_matrix[2][0]);
-	t -> up = glm::vec3 (t -> model_matrix[0][1], t -> model_matrix[1][1], t -> model_matrix[2][1]);
-	t -> forward = glm::vec3 (t -> model_matrix[0][2], t -> model_matrix[1][2], t -> model_matrix[2][2]);
+	glm::quat rotation = glm::angleAxis (glm::radians (angle), axis);
+	t -> rotation = t -> rotation * rotation;
+	transform_set_rotation (t, t -> rotation);
 }
 
 void transform_set_scale (transform* t, glm::vec3 scale) {

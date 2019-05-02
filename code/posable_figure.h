@@ -41,7 +41,7 @@ struct app {
 
 	texture* textures[TT_COUNT];
 
-	gizmo_part rotation_axis;
+	glm::vec3 rotation_axis;
 	object* selected_figure_part;
 	object* hover_figure_part;
 	glm::quat last_rotation;

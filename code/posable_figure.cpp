@@ -33,7 +33,8 @@ static void update_projection (app* App, unsigned window_width, unsigned window_
 }
 
 static void reset_pose (app* App) {
-	App -> rotation_axis = GP_COUNT;
+	App -> rotation_axis = glm::vec3 (0.0f);
+	// App -> rotation_axis = GP_COUNT;
 
 	if (App -> selected_figure_part) {
 		App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
@@ -49,15 +50,15 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 	api.get_window_size (&window_width, &window_height);
 
 	// Do the rotation
-	if (App -> rotation_axis != GP_COUNT) {
+	if (App -> rotation_axis != glm::vec3 (0.0f)) {
 		int x_delta = in.mouse_x - in.last_mouse_x;
 		if (in.lmb_down) {
-			if (App -> rotation_axis == GP_COUNT) {
+			if (App -> rotation_axis == glm::vec3 (0.0f)) {
 				App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
 				App -> selected_figure_part = NULL;
 			}
 			else {
-				App -> rotation_axis = GP_COUNT;
+				App -> rotation_axis = glm::vec3 (0.0f);
 				in.lmb_down = false;
 
 				for (unsigned i = 0; i < GP_COUNT; ++i)
@@ -66,7 +67,7 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 		}
 		else if (in.rmb_down) {
 			transform_set_rotation (App -> selected_figure_part -> t, App -> last_rotation);
-			App -> rotation_axis = GP_COUNT;
+			App -> rotation_axis = glm::vec3 (0.0f);
 
 			glm::vec3 world_position = transform_get_world_position (App -> selected_figure_part -> t);
 			glm::quat world_rotation = transform_get_world_rotation (App -> selected_figure_part -> t);
@@ -78,33 +79,10 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 			}
 		}
 		else {
-			if (App -> rotation_axis == GP_X_AXIS) {	
-				transform_rotate (App -> selected_figure_part -> t, App -> selected_figure_part -> t -> right, 
-								 x_delta * ROTATION_SPEED);
+			transform_rotate (App -> selected_figure_part -> t, App -> rotation_axis, x_delta * ROTATION_SPEED);
 
-				for (unsigned i = 0; i < GP_COUNT; ++i) {
-					transform_rotate (App -> rotation_gizmo[i] -> t, App -> selected_figure_part -> t -> right,
-									  x_delta * ROTATION_SPEED);
-				}
-			}
-			else if (App -> rotation_axis == GP_Y_AXIS) {
-				transform_rotate (App -> selected_figure_part -> t, App -> selected_figure_part -> t -> up,
-								  x_delta * ROTATION_SPEED);
-
-				for (unsigned i = 0; i < GP_COUNT; ++i) {
-					transform_rotate (App -> rotation_gizmo[i] -> t, App -> selected_figure_part -> t -> up,
-									  x_delta * ROTATION_SPEED);
-				}
-			}
-			else if (App -> rotation_axis == GP_Z_AXIS) {
-				transform_rotate (App -> selected_figure_part -> t, App -> selected_figure_part -> t -> forward,
-								  x_delta * ROTATION_SPEED);
-
-				for (unsigned i = 0; i < GP_COUNT; ++i) {
-					transform_rotate (App -> rotation_gizmo[i] -> t, App -> selected_figure_part -> t -> forward,
-									  x_delta * ROTATION_SPEED);
-				}
-			}
+			for (unsigned i = 0; i < GP_COUNT; ++i)
+				transform_rotate (App -> rotation_gizmo[i] -> t, App -> rotation_axis, x_delta * ROTATION_SPEED);
 		}
 	}
 
@@ -116,21 +94,27 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 		bool axis_selected = false;
 		if (in.x_down || in.y_down || in.z_down) {
 			if (in.x_down)
-				App -> rotation_axis = GP_X_AXIS;
+				App -> rotation_axis = glm::vec3 (1.0f, 0.0f, 0.0f);
 			else if (in.y_down)
-				App -> rotation_axis = GP_Y_AXIS;
+				App -> rotation_axis = glm::vec3 (0.0f, 1.0f, 0.0f);
 			else if (in.z_down)
-				App -> rotation_axis = GP_Z_AXIS;
+				App -> rotation_axis = glm::vec3 (0.0f, 0.0f, 1.0f);
 		}
 		else if (index != 0 && index >= 100) {
 			App -> rotation_gizmo[index - 100] -> m -> multiply_color = glm::vec3 (SELECTION_MULTIPLIER_COLOR);
 
 			if (in.lmb_down) {
-				App -> rotation_axis = (gizmo_part)(index - 100);
+				gizmo_part gp = (gizmo_part)(index - 100);
+				if (gp == GP_X_AXIS)
+					App -> rotation_axis = glm::vec3 (1.0f, 0.0f, 0.0f);
+				else if (gp == GP_Y_AXIS)
+					App -> rotation_axis = glm::vec3 (0.0f, 1.0f, 0.0f);
+				else if (gp == GP_Z_AXIS)
+					App -> rotation_axis = glm::vec3 (0.0f, 0.0f, 1.0f);
+
 				axis_selected = true;
 
 				App -> last_rotation = App -> selected_figure_part -> t -> rotation;
-
 				for (unsigned i = 0; i < GP_COUNT; ++i)
 					App -> rotation_gizmo[i] -> m -> visible = false;
 			}
@@ -141,17 +125,17 @@ static void handle_input (app* App, platform_api api, input in, float dt) {
 		}
 
 		if (in.lmb_down && !axis_selected) {
-			if (App -> rotation_axis == GP_COUNT) {
+			if (App -> rotation_axis == glm::vec3 (0.0f)) {
 				App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
 				App -> selected_figure_part = NULL;
 			}
 			else
-				App -> rotation_axis = GP_COUNT;
+				App -> rotation_axis = glm::vec3 (0.0f);
 		}
 	}
 
 	// Do the figure part selection
-	if (App -> rotation_axis == GP_COUNT) {
+	if (App -> rotation_axis == glm::vec3 (0.0f)) {
 		if (index != 0 && index <= FP_COUNT) {
 			if (App -> hover_figure_part && App -> hover_figure_part != App -> selected_figure_part)
 				App -> hover_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
@@ -385,7 +369,7 @@ void app_init (void* memory, platform_api api) {
 	glDisable (GL_MULTISAMPLE_ARB);
 	glEnable (GL_MULTISAMPLE_ARB);
 	
-	App -> rotation_axis = GP_COUNT;
+	App -> rotation_axis = glm::vec3 (0.0f);
 	App -> selected_figure_part = NULL;
 	App -> hover_figure_part = NULL;
 	App -> last_rotation = glm::quat (glm::vec3 (0.0f, 0.0f, 0.0f));
