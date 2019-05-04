@@ -60,8 +60,6 @@ GUI_MAIN {
 		in.y_down = is_key_down (global_window, KEY_Y);
 		in.z_down = is_key_down (global_window, KEY_Z);
 
-		in.f3_down = is_key_down (global_window, KEY_F3);
-
 		in.scroll_dir = global_window -> input -> mouse_scroll_direction;
 
 		app_update_and_render (app_memory, api, in, dt);
