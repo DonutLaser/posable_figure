@@ -284,6 +284,11 @@ void window_free (win32_window* window) {
 	free (window -> input);
 }
 
+void window_set_icon (win32_window* window, const char* icon_path) {
+	HANDLE icon_id = LoadImage (NULL, icon_path, IMAGE_ICON, 32, 32, LR_LOADFROMFILE);
+	SendMessage (window -> handle, WM_SETICON, ICON_BIG, (LPARAM)icon_id);
+}
+
 POINT get_window_size (win32_window* window) {
 	return wnd_get_client_size (window);
 }

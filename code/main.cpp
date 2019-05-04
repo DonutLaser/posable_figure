@@ -23,6 +23,7 @@ static bool platform_was_window_resized () {
 
 GUI_MAIN {
 	global_window = window_new ("Posable Figure", WINDOW_WIDTH, WINDOW_HEIGHT);
+	window_set_icon (global_window, ICON_IMAGE);
 
 	void* app_memory = malloc (sizeof (char) * 1024 * 1024 * 5); // 5 MB
 

@@ -152,6 +152,7 @@ bool window_update (win32_window* window);
 void window_render (win32_window* window);
 void window_close (win32_window* window);
 void window_free (win32_window* window);
+void window_set_icon (win32_window* window, const char* icon_path);
 
 POINT get_window_size (win32_window* window);
 

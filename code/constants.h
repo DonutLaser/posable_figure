@@ -39,6 +39,7 @@
 #define RESET_IMAGE				"../data/images/reset.png"
 #define ORTHO_IMAGE				"../data/images/orthographic.png"
 #define PERSP_IMAGE				"../data/images/perspective.png"
+#define ICON_IMAGE				"../data/images/icon.ico"
 
 #define FRONT_VIEW_YAW 0.0f
 #define FRONT_VIEW_PITCH 0.0f
