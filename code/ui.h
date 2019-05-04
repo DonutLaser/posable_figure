@@ -1,6 +1,7 @@
 #if !defined (UI_H)
 #define UI_H
 
+#include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
 
 enum ui_state { UI_DEFAULT, UI_HOVER, UI_CLICK };
@@ -9,13 +10,12 @@ struct input;
 struct texture;
 
 struct ui {
-	texture* default_texture;
-	glm::mat4 projection;
 	unsigned VAO;
 	unsigned VBO;
 
 	unsigned vertex_count;
 	unsigned shader_id;
+	unsigned texture_shader_id;
 };
 
 struct ui_button {
@@ -25,7 +25,7 @@ struct ui_button {
 	ui_state state;
 };
 
-ui* ui_new (unsigned shader_id);
+ui* ui_new (unsigned shader_id, unsigned texture_shader_id);
 ui_button* ui_button_new (glm::vec2 position, glm::vec2 size);
 
 void ui_render_rect (ui* UI, glm::vec2 position, glm::vec2 size, glm::vec3 color);

@@ -2,13 +2,12 @@
 #define ARC_BALL_H
 
 #include "camera.h"
+#include "glm/glm.hpp"
 
 #define ARC_BALL_SPEED 45.0f
 #define ARC_BALL_SENSITIVITY 0.009f;
 #define MIN_RADIUS 5.0f
 #define MAX_RADIUS 15.0f
-
-struct glm:: vec3;
 
 struct arc_ball {
 	camera cam;

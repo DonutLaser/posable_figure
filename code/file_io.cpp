@@ -93,8 +93,7 @@ bool was_file_changed (file f) {
 	if (GetFileTime (f.handle, NULL, NULL, &write_time))
 		return CompareFileTime (&f.last_write_time, &write_time) < 0;
 
-	DWORD error = GetLastError ();
-	printf ("Unable to get last write time of the file %s", f.path);
+	printf ("Unable to get last write time of the file %s\n", f.path);
 
 	return false;
 }

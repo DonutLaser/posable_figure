@@ -13,6 +13,8 @@
 #define UNLIT_FRAG_SOURCE		"../data/shaders/unlit.frag"
 #define UI_VERT_SOURCE 			"../data/shaders/ui.vert"
 #define UI_FRAG_SOURCE 			"../data/shaders/ui.frag"
+#define UI_TEX_VERT_SOURCE		"../data/shaders/ui_texture.vert"
+#define UI_TEX_FRAG_SOURCE		"../data/shaders/ui_texture.frag"
 
 #define HEAD					"../data/models/head.obj"
 #define CHEST					"../data/models/chest.obj"
@@ -37,11 +39,10 @@
 #define RESET_IMAGE				"../data/images/reset.png"
 #define ORTHO_IMAGE				"../data/images/orthographic.png"
 #define PERSP_IMAGE				"../data/images/perspective.png"
-#define DEFAULT_IMAGE			"../data/images/default.png"
 
 #define FRONT_VIEW_YAW 0.0f
 #define FRONT_VIEW_PITCH 0.0f
-#define RIGHT_VIEW_YAW 90.0f;
+#define RIGHT_VIEW_YAW 90.0f
 #define RIGHT_VIEW_PITCH 0.0f
 #define TOP_VIEW_YAW 0.0f
 #define TOP_VIEW_PITCH 90.0f

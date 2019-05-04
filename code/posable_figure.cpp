@@ -1,7 +1,5 @@
 #include "posable_figure.h"
 
-#include "glm/glm.hpp"
-
 #include "obj_loader.h"
 #include "platform.h"
 #include "shader.h"
@@ -30,11 +28,12 @@ static void update_projection (app* App, unsigned window_width, unsigned window_
 	glm::mat4 ui_projection = glm::ortho (0.0f, (float)window_width, (float)window_height, 0.0f, -1.0f, 1.0f);
 	shader_use (App -> UI -> shader_id);
 	shader_set_mat4 (App -> UI -> shader_id, "projection", ui_projection);
+	shader_use (App -> UI -> texture_shader_id);
+	shader_set_mat4 (App -> UI -> texture_shader_id, "projection", ui_projection);
 }
 
 static void reset_pose (app* App) {
 	App -> rotation_axis = glm::vec3 (0.0f);
-	// App -> rotation_axis = GP_COUNT;
 
 	if (App -> selected_figure_part) {
 		App -> selected_figure_part -> m -> multiply_color = glm::vec3 (1.0f, 1.0f, 1.0f);
@@ -45,8 +44,8 @@ static void reset_pose (app* App) {
 		transform_set_rotation (App -> figure[i] -> t, glm::quat (glm::vec3 (0.0f, 0.0f, 0.0f)));
 }
 
-static void handle_input (app* App, platform_api api, input in, float dt) {
-	unsigned window_width, window_height;
+static void handle_input (app* App, platform_api api, input in) {
+	unsigned window_width = 0, window_height = 0;
 	api.get_window_size (&window_width, &window_height);
 
 	// Do the rotation
@@ -339,10 +338,11 @@ void app_init (void* memory, platform_api api) {
 	unsigned default_shader = load_shader (api, DEFAULT_VERT_SOURCE, DEFAULT_FRAG_SOURCE);
 	unsigned unlit_shader = load_shader (api, UNLIT_VERT_SOURCE, UNLIT_FRAG_SOURCE);
 	unsigned ui_shader = load_shader (api, UI_VERT_SOURCE, UI_FRAG_SOURCE);
+	unsigned ui_tex_shader = load_shader (api, UI_TEX_VERT_SOURCE, UI_TEX_FRAG_SOURCE);
 
 	setup_figure (App, default_shader);
 	setup_gizmo (App, unlit_shader);
-	App -> UI = ui_new (ui_shader);
+	App -> UI = ui_new (ui_shader, ui_tex_shader);
 
 	App -> camera = arc_ball_new (glm::vec3 (0.0f, 0.0f, 0.0f));
 	App -> camera.cam.orthographic = false;
@@ -374,10 +374,7 @@ void app_init (void* memory, platform_api api) {
 	App -> hover_figure_part = NULL;
 	App -> last_rotation = glm::quat (glm::vec3 (0.0f, 0.0f, 0.0f));
 
-	const char* paths[TT_COUNT] = {
-		RESET_IMAGE, ORTHO_IMAGE, PERSP_IMAGE,
-		DEFAULT_IMAGE
-	};
+	const char* paths[TT_COUNT] = { RESET_IMAGE, ORTHO_IMAGE, PERSP_IMAGE };
 
 	for (unsigned i = 0; i < TT_COUNT; ++i) {
 		unsigned width, height;
@@ -386,13 +383,12 @@ void app_init (void* memory, platform_api api) {
 	}
 
 	App -> button -> tex = App -> textures[TT_RESET];
-	App -> UI -> default_texture = App -> textures[TT_DEFAULT];
 }
 
 void app_update_and_render (void* memory, platform_api api, input in, float dt) {
 	app* App = (app*)memory;
 
-	unsigned window_width, window_height;
+	unsigned window_width = 0, window_height = 0;
 	api.get_window_size (&window_width, &window_height);
 
 	if (api.was_window_resized ()) {
@@ -401,7 +397,7 @@ void app_update_and_render (void* memory, platform_api api, input in, float dt) 
 											   window_height - 10 - App -> button -> size.y);
 	}
 
-	handle_input (App, api, in, dt);
+	handle_input (App, api, in);
 
 	glClearColor (BG_COLOR);
 	glClearStencil (0);

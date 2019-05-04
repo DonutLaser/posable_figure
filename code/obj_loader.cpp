@@ -328,14 +328,14 @@ OBJ obj_load (const char* path) {
 
 	for (unsigned i = 0; i < obj_faces.count; ++i) {
 		face f = obj_faces.data[i];
-		for (unsigned i = 0; i < 3; ++i)
-			float_array_add (&result.vertices, obj_vertices.data[(f.vert - 1) * 3 + i]);
+		for (unsigned j = 0; j < 3; ++j)
+			float_array_add (&result.vertices, obj_vertices.data[(f.vert - 1) * 3 + j]);
 
-		for (unsigned i = 0; i < 2; ++i)
-			float_array_add (&result.uv, obj_uv.data[(f.uv - 1) * 2 + i]);
+		for (unsigned j = 0; j < 2; ++j)
+			float_array_add (&result.uv, obj_uv.data[(f.uv - 1) * 2 + j]);
 
-		for (unsigned i = 0; i < 3; ++i)
-			float_array_add (&result.normals, obj_normals.data[(f.normal - 1) * 3 + i]);
+		for (unsigned j = 0; j < 3; ++j)
+			float_array_add (&result.normals, obj_normals.data[(f.normal - 1) * 3 + j]);
 	}
 
 	free (obj_vertices.data);

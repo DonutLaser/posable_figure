@@ -10,7 +10,7 @@
 static void compile_shader (unsigned shader, const char* type) {
 	glCompileShader (shader);
 
-	int success;
+	int success = 0;
 	char info_log[512];
 	glGetShaderiv (shader, GL_COMPILE_STATUS, &success);
 	if (!success) {
@@ -33,7 +33,7 @@ unsigned shader_new (const char* vert_source, const char* frag_source) {
 	glAttachShader (full_shader, frag_shader);
 	glLinkProgram (full_shader);
 
-	int success;
+	int success = 0;
 	char info_log[512];
 	glGetProgramiv (full_shader, GL_LINK_STATUS, &success);
 	if (!success) {

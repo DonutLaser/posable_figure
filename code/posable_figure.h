@@ -4,6 +4,7 @@
 #include "object.h"
 #include "arc_ball.h"
 #include "glm/gtc/quaternion.hpp"
+#include "glm/glm.hpp"
 
 struct input;
 struct platform_api;
@@ -29,7 +30,7 @@ enum gizmo_part {
 	GP_COUNT
 };
 
-enum texture_type { TT_RESET, TT_ORTHO, TT_PERSP, TT_DEFAULT, TT_COUNT };
+enum texture_type { TT_RESET, TT_ORTHO, TT_PERSP, TT_COUNT };
 
 struct app {
 	object* figure[FP_COUNT];
